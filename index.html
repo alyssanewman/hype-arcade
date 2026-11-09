@@ -99,8 +99,8 @@ h1 .line { display: block; white-space: nowrap; }
 h1 .line span { display: inline-block; }
 h1 .l1 { color: #ffe3fa; text-shadow: 0 0 3px #fff, 0 0 10px var(--pink), 0 0 24px var(--pink), 0 0 48px var(--pink), 0 0 80px rgba(255,43,214,.6); }
 h1 .l2 { color: #dcfdff; text-shadow: 0 0 3px #fff, 0 0 10px var(--cyan), 0 0 24px var(--cyan), 0 0 48px var(--cyan), 0 0 80px rgba(34,243,255,.6); }
-.flicker span { animation: flicker 6s linear infinite; animation-delay: calc(var(--i) * -.9s); }
-@keyframes flicker { 0%, 91%, 93%, 96%, 100% { opacity: 1; } 92%, 95% { opacity: .35; } }
+.flicker span { animation: flicker 9s linear infinite; animation-delay: calc(var(--i) * -1.7s); }
+@keyframes flicker { 0%, 96%, 98%, 100% { opacity: 1; } 97% { opacity: .55; } }
 
 .sub { margin: 0; font-size: clamp(15px, 3.6vw, 18px); max-width: 34ch; text-wrap: balance; color: var(--text); }
 .prize { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; font-family: var(--arcade); font-size: clamp(10px, 2.6vw, 13px); color: var(--green); text-shadow: 0 0 10px rgba(57,255,136,.7); }
