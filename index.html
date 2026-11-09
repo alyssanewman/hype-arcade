@@ -1,0 +1,779 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bubble Board</title>
+<meta name="description" content="An underwater, Japanese-arcade style high score board for employee advocacy. Teammates log their LinkedIn and Instagram plays and race for the top spot.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Mochiy+Pop+One&family=Rubik+Bubbles&display=swap">
+<style>
+/* =========================================================
+   BUBBLE BOARD
+   One deep-sea arcade cabinet: marquee, high scores, log a play,
+   how to score, latest plays, game master. Single dark ocean look by design.
+   ========================================================= */
+:root {
+  --abyss: #020b24;
+  --deep: #04224f;
+  --sea: #0a4f8f;
+  --aqua: #5ff2ff;
+  --foam: #e8fbff;
+  --dim: #8fbbd9;
+  --coral: #ff6f91;
+  --sun: #ffd84d;
+  --kelp: #43e597;
+  --violet: #a68bff;
+  --ink: #021027;
+  --red: #ff5c6c;
+  --glass: rgba(150, 225, 255, .07);
+  --line: rgba(140, 220, 255, .26);
+  --bubble: "Rubik Bubbles", "Mochiy Pop One", system-ui, sans-serif;
+  --pop: "Mochiy Pop One", system-ui, sans-serif;
+  --pixel: "DotGothic16", ui-monospace, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; min-height: 100vh;
+  font-family: var(--pop); font-size: 15px; line-height: 1.5; color: var(--foam);
+  background:
+    radial-gradient(120% 55% at 50% -8%, rgba(95,242,255,.32), transparent 62%),
+    linear-gradient(180deg, var(--sea) 0%, var(--deep) 42%, var(--abyss) 100%);
+  background-color: var(--abyss);
+  background-attachment: fixed;
+  padding: 24px max(16px, env(safe-area-inset-right)) 170px max(16px, env(safe-area-inset-left));
+  overflow-x: hidden;
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ---------- ocean scenery ---------- */
+.rays {
+  position: fixed; inset: -10% -20% auto; height: 80vh; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(100deg, transparent 0 60px, rgba(180,245,255,.06) 60px 90px, transparent 90px 170px);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
+  animation: sway 14s ease-in-out infinite alternate;
+}
+@keyframes sway { from { transform: skewX(-6deg) translateX(-3%); } to { transform: skewX(6deg) translateX(3%); } }
+.bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.bubbles i {
+  position: absolute; bottom: -60px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.9) 0 9%, rgba(160,240,255,.25) 10% 55%, rgba(160,240,255,.08) 56%);
+  border: 1px solid rgba(200,250,255,.45);
+  animation: rise linear infinite;
+}
+@keyframes rise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  8% { opacity: 1; }
+  50% { transform: translate(18px, -55vh); }
+  100% { transform: translate(-12px, -115vh); opacity: .2; }
+}
+.seabed { position: fixed; left: 0; right: 0; bottom: 0; height: 150px; pointer-events: none; z-index: 0; }
+.seabed svg { width: 100%; height: 100%; display: block; }
+.kelp { transform-origin: bottom center; animation: kelp 5s ease-in-out infinite alternate; }
+.kelp.b { animation-duration: 6.5s; animation-delay: -2s; }
+.kelp.c { animation-duration: 4.2s; animation-delay: -1s; }
+@keyframes kelp { from { transform: skewX(-7deg); } to { transform: skewX(7deg); } }
+.marquee > :not(.fish) { position: relative; z-index: 1; }
+.fish { position: absolute; z-index: 0; opacity: .85; top: 18px; left: -80px; width: 54px; animation: swim 19s linear infinite; }
+.fish.two { top: 70%; width: 34px; animation-duration: 27s; animation-delay: -9s; }
+@keyframes swim { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 160px)); } }
+@media (prefers-reduced-motion: reduce) {
+  .rays, .kelp, .fish, .bubbles i, .bob span, .blink { animation: none !important; }
+  .bubbles, .fish { display: none; }
+}
+
+/* ---------- cabinet ---------- */
+.cabinet { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+
+.marquee {
+  position: relative; overflow: hidden; text-align: center;
+  padding: 26px 16px 28px; border-radius: 36px;
+  background:
+    radial-gradient(80% 70% at 50% 0%, rgba(95,242,255,.28), transparent 70%),
+    linear-gradient(180deg, rgba(10,79,143,.85), rgba(4,34,79,.9));
+  border: 4px solid var(--aqua);
+  box-shadow: 0 0 0 6px var(--ink), 0 0 0 10px rgba(95,242,255,.35), 0 18px 50px rgba(0,0,0,.45), inset 0 0 40px rgba(95,242,255,.18);
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+.tagrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.tag {
+  font-family: var(--pop); font-size: 12px; letter-spacing: .08em;
+  padding: 5px 12px; border-radius: 999px; background: var(--ink); color: var(--aqua);
+  border: 2px solid rgba(95,242,255,.5);
+}
+.tag.jp { color: var(--coral); border-color: rgba(255,111,145,.6); }
+.tag.mode { color: var(--kelp); border-color: rgba(67,229,151,.55); }
+.tag.mode.demo { color: var(--sun); border-color: rgba(255,216,77,.55); }
+
+h1 {
+  margin: 4px 0 0; font-family: var(--bubble); font-weight: 400;
+  font-size: clamp(50px, 14vw, 112px); line-height: .92; letter-spacing: .01em;
+  display: flex; flex-direction: column; align-items: center;
+}
+h1 .line { display: block; white-space: nowrap; }
+h1 .line span {
+  display: inline-block;
+  -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill;
+}
+h1 .l1 span { color: var(--sun);  text-shadow: 0 5px 0 var(--coral), 0 10px 0 var(--ink), 0 0 28px rgba(255,216,77,.45); }
+h1 .l2 span { color: var(--aqua); text-shadow: 0 5px 0 var(--violet), 0 10px 0 var(--ink), 0 0 28px rgba(95,242,255,.45); }
+.bob span { animation: bob 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * -.18s); }
+@keyframes bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+
+.sub { font-family: var(--pop); font-size: clamp(13px, 3.4vw, 17px); color: var(--foam); margin: 6px 0 0; max-width: 34ch; text-wrap: balance; }
+.prize {
+  display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  font-family: var(--pop); font-size: clamp(14px, 3.6vw, 18px); color: var(--kelp);
+}
+.prize b {
+  font-family: var(--bubble); font-weight: 400; font-size: 1.7em; color: var(--sun);
+  -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--coral);
+}
+.hud { display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; }
+.hud span {
+  font-family: var(--pixel); font-size: 15px; color: var(--dim);
+  background: rgba(2,16,39,.7); border: 2px solid var(--line); border-radius: 14px; padding: 4px 12px;
+}
+.hud b { color: var(--foam); font-weight: 400; margin-left: 4px; }
+.start {
+  font-family: var(--pop); font-size: 16px; color: var(--ink); text-decoration: none; cursor: pointer;
+  background: linear-gradient(180deg, #fff3a6, var(--sun) 55%, #f2b81e);
+  border: 3px solid var(--ink); border-radius: 999px; padding: 12px 26px;
+  box-shadow: 0 6px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.7);
+  display: inline-flex; align-items: center; gap: 10px;
+}
+.start:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.7); }
+.start small { font-size: 12px; opacity: .75; }
+.blink { animation: blink 1.2s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+
+/* ---------- panels ---------- */
+.panel {
+  position: relative; min-width: 0;
+  background: linear-gradient(180deg, rgba(150,225,255,.10), rgba(150,225,255,.04)), rgba(2,16,39,.55);
+  border: 3px solid var(--line); border-radius: 30px; padding: 22px 20px;
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 12px 30px rgba(0,0,0,.3);
+  display: flex; flex-direction: column; gap: 16px;
+  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+}
+.panel::after {
+  content: ""; position: absolute; top: 12px; right: 18px; width: 26px; height: 14px; border-radius: 50%;
+  background: rgba(255,255,255,.35); transform: rotate(-20deg); pointer-events: none;
+}
+.panel.hot { border-color: var(--aqua); box-shadow: 0 0 26px rgba(95,242,255,.25), inset 0 2px 0 rgba(255,255,255,.15); }
+.ph { text-align: center; display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.ph .jp { font-family: var(--pixel); font-size: 14px; color: var(--coral); letter-spacing: .2em; }
+h2 { margin: 0; font-family: var(--bubble); font-weight: 400; font-size: clamp(24px, 6vw, 32px); color: var(--foam); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--sea); }
+.note { color: var(--dim); margin: 0; text-align: center; }
+
+/* ---------- high scores ---------- */
+.scores { width: 100%; border-collapse: separate; border-spacing: 0 8px; font-variant-numeric: tabular-nums; }
+.scores th { font-family: var(--pixel); font-weight: 400; font-size: 13px; color: var(--dim); text-align: left; padding: 0 10px; }
+.scores td { padding: 10px; background: rgba(2,16,39,.6); white-space: nowrap; }
+.scores td:first-child { border-radius: 999px 0 0 999px; width: 1%; }
+.scores td:last-child { border-radius: 0 999px 999px 0; }
+.scores .r { text-align: right; }
+.scores .ini { font-family: var(--pixel); font-size: clamp(20px, 5vw, 26px); letter-spacing: .15em; }
+.scores .who { font-size: 14px; color: var(--dim); white-space: normal; }
+.scores .pts { font-family: var(--pixel); font-size: clamp(20px, 5vw, 26px); }
+.badge {
+  width: 46px; height: 46px; border-radius: 50%; display: inline-grid; place-items: center;
+  font-family: var(--pixel); font-size: 15px; color: var(--ink);
+  background: radial-gradient(circle at 24% 20%, rgba(255,255,255,.95) 0 7%, transparent 8%), radial-gradient(circle at 50% 40%, var(--c, var(--dim)) 0 62%, color-mix(in srgb, var(--c, var(--dim)) 70%, #000) 100%);
+  border: 2px solid var(--ink);
+}
+.rank-1 { --c: var(--sun); }
+.rank-2 { --c: var(--aqua); }
+.rank-3 { --c: var(--coral); }
+.rank-n { --c: #8aa7c4; }
+.rank-1 .ini, .rank-1 .pts { color: var(--sun); text-shadow: 0 0 10px rgba(255,216,77,.6); }
+.rank-2 .ini, .rank-2 .pts { color: var(--aqua); }
+.rank-3 .ini, .rank-3 .pts { color: var(--coral); }
+tr.me td { background: rgba(255,216,77,.12); }
+tr.me td:first-child { box-shadow: inset 4px 0 0 var(--sun); }
+.empty { text-align: center; color: var(--dim); padding: 12px 0; }
+.empty b { display: block; font-family: var(--pop); font-weight: 400; font-size: 18px; color: var(--sun); margin-bottom: 6px; }
+@media (max-width: 520px) { .scores .who { display: none; } .badge { width: 38px; height: 38px; font-size: 13px; } }
+
+/* ---------- controls ---------- */
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 26px; }
+form { display: flex; flex-direction: column; gap: 16px; }
+label, .lbl { display: block; font-family: var(--pixel); font-size: 14px; color: var(--aqua); letter-spacing: .08em; margin-bottom: 8px; }
+.lbl small, label small { color: var(--dim); letter-spacing: 0; }
+input[type=text], input[type=url], input[type=date] {
+  width: 100%; font-family: var(--pop); font-size: 16px; color: var(--foam);
+  background: rgba(2,16,39,.8); border: 3px solid var(--line); border-radius: 18px; padding: 10px 14px;
+}
+input::placeholder { color: #5f86a8; }
+input:focus { border-color: var(--aqua); outline: none; box-shadow: 0 0 0 4px rgba(95,242,255,.2); }
+#initials { font-family: var(--pixel); font-size: 28px; letter-spacing: .45em; text-transform: uppercase; color: var(--sun); width: 8em; text-align: center; padding-left: 22px; }
+.moves { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.move {
+  font-family: var(--pop); font-size: 13px; line-height: 1.35; color: var(--foam); text-align: left; cursor: pointer;
+  background: rgba(2,16,39,.75); border: 3px solid var(--line); border-radius: 20px; padding: 10px 12px;
+  transition: transform .12s ease, border-color .12s ease;
+}
+.move small { display: block; font-family: var(--pixel); font-size: 15px; color: var(--kelp); margin-top: 2px; }
+.move:hover { transform: translateY(-2px); }
+.move[aria-pressed=true] { border-color: var(--coral); background: rgba(255,111,145,.16); box-shadow: 0 0 16px rgba(255,111,145,.35); }
+.plat .move { text-align: center; font-size: 14px; }
+.msg { margin: 0; min-height: 1.4em; font-size: 14px; }
+.msg.bad { color: var(--red); }
+.msg.ok { color: var(--kelp); }
+.logged {
+  display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 22px;
+  border: 3px solid var(--kelp); background: rgba(67,229,151,.1);
+}
+.logged b { display: block; font-weight: 400; color: var(--kelp); }
+.check { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--kelp); border: 2px solid var(--ink); }
+.check svg { width: 20px; height: 20px; stroke: var(--ink); stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+.rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rules li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 7px; border-bottom: 2px dotted var(--line); }
+.rules li.platname { border: 0; padding: 8px 0 0; font-family: var(--pixel); font-size: 15px; color: var(--coral); letter-spacing: .1em; }
+.rules .when { color: var(--dim); font-size: 13px; }
+.rules .p { font-family: var(--pixel); font-size: 18px; color: var(--sun); white-space: nowrap; }
+.fine { color: var(--dim); font-size: 13px; margin: 0; }
+
+/* ---------- feed ---------- */
+.feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.feed li { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 20px; background: rgba(2,16,39,.55); }
+.feed .p { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-family: var(--pixel); font-size: 17px; color: var(--ink); background: radial-gradient(circle at 24% 20%, rgba(255,255,255,.95) 0 7%, transparent 8%), var(--kelp); border: 2px solid var(--ink); }
+.feed .p.zero { background: radial-gradient(circle at 24% 20%, rgba(255,255,255,.95) 0 7%, transparent 8%), #6d86a0; }
+.feed .t { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+.feed .t b { font-family: var(--pixel); font-weight: 400; font-size: 18px; color: var(--sun); letter-spacing: .1em; margin-right: 4px; }
+.feed a { color: var(--aqua); }
+.feed .when { color: var(--dim); }
+.feed .x { flex: none; font-family: var(--pixel); font-size: 13px; color: var(--red); background: none; border: 2px solid var(--red); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+
+/* ---------- game master ---------- */
+.admin { border-style: dashed; }
+.row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
+.row > div { flex: 1 1 180px; min-width: 0; }
+.btn2 { font-family: var(--pop); font-size: 14px; color: var(--foam); background: rgba(2,16,39,.8); border: 3px solid var(--line); border-radius: 999px; padding: 10px 18px; cursor: pointer; }
+.btn2.danger { border-color: rgba(255,92,108,.6); color: var(--red); }
+.btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+/* ---------- pop + toast ---------- */
+.pop {
+  position: fixed; left: 50%; top: 38%; z-index: 60; pointer-events: none;
+  width: 170px; height: 170px; margin-left: -85px; border-radius: 50%;
+  display: grid; place-items: center; text-align: center;
+  background: radial-gradient(circle at 30% 26%, rgba(255,255,255,.95) 0 10%, rgba(95,242,255,.35) 11% 60%, rgba(95,242,255,.15) 61%);
+  border: 3px solid rgba(220,252,255,.8);
+  animation: popup 1.25s cubic-bezier(.2,.9,.3,1.2) forwards;
+}
+.pop b { display: block; font-family: var(--bubble); font-weight: 400; font-size: 54px; line-height: 1; color: var(--sun); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--coral); }
+.pop span { font-family: var(--pop); font-size: 18px; color: var(--foam); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; }
+@keyframes popup {
+  0% { transform: scale(.2) translateY(40px); opacity: 0; }
+  25% { transform: scale(1.08) translateY(0); opacity: 1; }
+  70% { transform: scale(1) translateY(-30px); opacity: 1; }
+  100% { transform: scale(1.6) translateY(-60px); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .pop { display: none; } }
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70;
+  max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 999px;
+  background: var(--ink); border: 3px solid var(--kelp); color: var(--kelp); font-size: 14px;
+}
+.toast.bad { border-color: var(--red); color: var(--red); }
+
+.credit { text-align: center; font-size: 12px; color: var(--dim); }
+.credit a { color: var(--aqua); }
+</style>
+</head>
+<body>
+
+<div class="rays" aria-hidden="true"></div>
+<div class="bubbles" id="bubbles" aria-hidden="true"></div>
+<div class="seabed" aria-hidden="true">
+  <svg viewBox="0 0 1200 150" preserveAspectRatio="none">
+    <g fill="#0d7a63" opacity=".75">
+      <path class="kelp" d="M80 150 C60 110 110 90 85 55 C65 30 95 10 90 0 C110 20 100 45 115 65 C135 95 100 115 110 150Z"/>
+      <path class="kelp b" d="M210 150 C195 120 240 100 220 70 C205 45 230 30 228 18 C250 40 238 60 250 80 C265 110 232 125 240 150Z"/>
+      <path class="kelp c" d="M1010 150 C990 115 1040 95 1015 60 C995 35 1025 15 1020 4 C1042 26 1030 50 1045 70 C1065 100 1030 120 1040 150Z"/>
+      <path class="kelp" d="M1120 150 C1105 125 1145 105 1128 80 C1115 60 1135 45 1134 35 C1155 55 1142 72 1152 90 C1165 115 1138 128 1146 150Z"/>
+    </g>
+    <path d="M0 130 C200 112 380 140 600 124 C820 108 1000 138 1200 120 L1200 150 L0 150Z" fill="#031631"/>
+    <g fill="#ff6f91" opacity=".8">
+      <circle cx="420" cy="128" r="9"/><circle cx="436" cy="122" r="7"/><circle cx="450" cy="130" r="8"/>
+      <circle cx="780" cy="126" r="8"/><circle cx="794" cy="119" r="6"/>
+    </g>
+  </svg>
+</div>
+
+<div class="cabinet">
+  <header class="marquee">
+    <svg class="fish" viewBox="0 0 60 34" aria-hidden="true"><path d="M8 17 C18 2 44 2 52 17 C44 32 18 32 8 17Z" fill="#ff9a3c" stroke="#021027" stroke-width="2.5"/><path d="M10 17 L0 5 L0 29Z" fill="#ff6f91" stroke="#021027" stroke-width="2.5" stroke-linejoin="round"/><circle cx="42" cy="14" r="3.2" fill="#021027"/><circle cx="43" cy="13" r="1" fill="#fff"/></svg>
+    <svg class="fish two" viewBox="0 0 60 34" aria-hidden="true"><path d="M8 17 C18 2 44 2 52 17 C44 32 18 32 8 17Z" fill="#a68bff" stroke="#021027" stroke-width="2.5"/><path d="M10 17 L0 5 L0 29Z" fill="#5ff2ff" stroke="#021027" stroke-width="2.5" stroke-linejoin="round"/><circle cx="42" cy="14" r="3.2" fill="#021027"/></svg>
+
+    <div class="tagrow">
+      <span class="tag" id="companyTag">YOUR COMPANY PRESENTS</span>
+      <span class="tag jp" id="jpTag">バブル・ボード</span>
+      <span class="tag mode demo" id="modeTag">DEMO MODE</span>
+    </div>
+    <h1 class="bob" id="title" aria-label="Bubble Board"></h1>
+    <p class="sub" id="subline">Post, share and cheer for the team. Every play scores points.</p>
+    <div class="prize"><span id="prizeLead">TOP DIVER WINS</span> <b id="prize">$100</b></div>
+    <div class="hud">
+      <span>DIVERS<b id="hudPlayers">--</b></span>
+      <span>PLAYS<b id="hudPlays">--</b></span>
+      <span>のこり TIME<b id="hudTime">--</b></span>
+    </div>
+    <a class="start" href="#play"><span class="blink">PRESS START</span> <small>スタート</small></a>
+  </header>
+
+  <section class="panel hot" aria-labelledby="hsTitle">
+    <div class="ph"><span class="jp">ハイスコア</span><h2 id="hsTitle">High Scores</h2></div>
+    <table class="scores">
+      <thead><tr><th>RANK</th><th>NAME</th><th class="who">DIVER</th><th class="r">SCORE</th></tr></thead>
+      <tbody id="board"></tbody>
+    </table>
+    <div class="empty" id="boardEmpty"><b>INSERT COIN · コインを入れてね</b>No scores yet. Log the first play and take the top spot.</div>
+  </section>
+
+  <div class="two">
+    <section class="panel" id="play" aria-labelledby="playTitle">
+      <div class="ph"><span class="jp">プレイ</span><h2 id="playTitle">Log a Play</h2></div>
+      <form id="playForm" novalidate>
+        <div>
+          <label for="initials">YOUR INITIALS</label>
+          <input type="text" id="initials" maxlength="3" autocomplete="off" placeholder="AAA" spellcheck="false">
+        </div>
+        <div>
+          <span class="lbl" id="platLabel">WHICH PLATFORM?</span>
+          <div class="moves plat" id="platforms" role="group" aria-labelledby="platLabel"></div>
+        </div>
+        <div>
+          <span class="lbl" id="movesLabel">WHAT DID YOU DO?</span>
+          <div class="moves" id="moves" role="group" aria-labelledby="movesLabel"></div>
+        </div>
+        <div>
+          <label for="url" id="urlLabel">LINK TO THE POST</label>
+          <input type="url" id="url" autocomplete="off">
+        </div>
+        <button class="start" type="submit" style="align-self:flex-start">+ ADD POINTS</button>
+        <p class="msg" id="msg" role="status"></p>
+        <div class="logged" id="loggedCard" hidden role="status">
+          <span class="check"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span>
+          <div><b>PLAY LOGGED · やった!</b><span id="loggedText"></span></div>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="rulesTitle">
+      <div class="ph"><span class="jp">ルール</span><h2 id="rulesTitle">How to Score</h2></div>
+      <ul class="rules" id="rules"></ul>
+      <p class="fine" id="fineprint"></p>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="feedTitle">
+    <div class="ph"><span class="jp">さいしん</span><h2 id="feedTitle">Latest Plays</h2></div>
+    <ul class="feed" id="feed"></ul>
+    <p class="note" id="feedEmpty">Plays show up here the moment someone logs one.</p>
+  </section>
+
+  <section class="panel admin" id="adminPanel" hidden aria-labelledby="adminTitle">
+    <div class="ph"><span class="jp">ゲームマスター</span><h2 id="adminTitle">Game Master</h2></div>
+    <form id="seasonForm" class="row">
+      <div><label for="startDate">CONTEST STARTS</label><input type="date" id="startDate"></div>
+      <div><label for="endDate">CONTEST ENDS</label><input type="date" id="endDate"></div>
+      <button class="start" type="submit">SAVE</button>
+      <p class="msg" id="seasonMsg" role="status" style="flex-basis:100%"></p>
+    </form>
+    <div class="btns" id="demoBtns" hidden>
+      <button class="btn2" type="button" id="resetDemo">Reload demo divers</button>
+      <button class="btn2 danger" type="button" id="clearAll">Clear the board</button>
+    </div>
+    <p class="fine" id="adminNote">Only editors see this panel. Use the X next to any play to remove it.</p>
+  </section>
+
+  <p class="credit">Made with Claude. Want your own? <a id="repoLink" href="https://github.com/alyssanewman/bubble-board">Grab the template</a>.</p>
+</div>
+
+<script>
+/* =========================================================
+   EDIT ME: everything that makes this board yours lives here.
+   ========================================================= */
+const CONFIG = {
+  company: "Your Company",           // shows in the marquee and the rules
+  instagram: "@yourcompany",         // your Instagram handle
+  titleLines: ["BUBBLE", "BOARD"],   // the big bubble letters (keep each line short)
+  jpTag: "バブル・ボード",             // little Japanese tag in the marquee
+  subline: "Post, share and cheer for the team. Every play scores points.",
+  prizeLead: "TOP DIVER WINS",
+  prize: "$100",
+  likeCap: 10,                       // likes that count per person per day
+  gameMaster: "your Game Master",    // who to ask for access
+  repoUrl: "https://github.com/alyssanewman/bubble-board", // link in the footer
+  platforms: [
+    { key: "li", name: "LinkedIn", host: /^https:\/\/(([a-z0-9-]+\.)*linkedin\.com|lnkd\.in)\//i, placeholder: "https://www.linkedin.com/posts/..." },
+    { key: "ig", name: "Instagram", host: /^https:\/\/([a-z0-9-]+\.)*instagram\.com\//i, placeholder: "Paste the link, or describe it: launch reel, Nov 3", label: "LINK OR DESCRIPTION", describe: true },
+  ],
+  moves: [
+    { key: "post",       plat: "li", name: "Original post",     pts: 10, hint: "mentions or tags {company}" },
+    { key: "reshare",    plat: "li", name: "Reshare + comment", pts: 5,  hint: "a {company} post, with your take" },
+    { key: "repost",     plat: "li", name: "Repost",            pts: 4,  hint: "a {company} post to your feed" },
+    { key: "comment",    plat: "li", name: "Comment",           pts: 3,  hint: "on a {company} or teammate post" },
+    { key: "like",       plat: "li", name: "Like",              pts: 1,  hint: "on a {company} or teammate post", like: true },
+    { key: "ig_story",   plat: "ig", name: "Story",             pts: 4,  hint: "shares a {company} post, tagged" },
+    { key: "ig_repost",  plat: "ig", name: "Feed repost",       pts: 3,  hint: "a {company} post" },
+    { key: "ig_comment", plat: "ig", name: "Comment",           pts: 2,  hint: "on a {company} or teammate post" },
+    { key: "ig_like",    plat: "ig", name: "Like",              pts: 1,  hint: "on a {company} or teammate post", like: true },
+  ],
+  cheers: ["すごい!", "ナイス!", "やった!", "かわいい!", "最高!"],
+};
+/* ========================================================= */
+
+const $ = id => document.getElementById(id);
+const fill = s => s.replaceAll("{company}", CONFIG.company);
+const moveOf = k => CONFIG.moves.find(m => m.key === k);
+const platOf = k => CONFIG.platforms.find(p => p.key === k);
+const isLike = k => !!moveOf(k)?.like;
+const fullName = m => (platOf(m.plat)?.name || "") + " " + m.name.toLowerCase();
+const rid = () => Math.random().toString(36).slice(2, 10);
+
+let store = null, players = [], season = {}, names = {};
+let platform = CONFIG.platforms[0].key;
+let chosen = CONFIG.moves.find(m => m.plat === platform).key;
+
+// ---------- scenery ----------
+function buildTitle() {
+  const h = $("title"); let i = 0;
+  h.replaceChildren(...CONFIG.titleLines.map((line, n) => {
+    const row = document.createElement("span"); row.className = "line l" + ((n % 2) + 1);
+    for (const ch of line) { const s = document.createElement("span"); s.textContent = ch === " " ? " " : ch; s.style.setProperty("--i", i++); row.append(s); }
+    return row;
+  }));
+  h.setAttribute("aria-label", CONFIG.titleLines.join(" "));
+  document.title = CONFIG.titleLines.map(w => w[0] + w.slice(1).toLowerCase()).join(" ");
+}
+function buildBubbles() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const box = $("bubbles");
+  for (let n = 0; n < 22; n++) {
+    const b = document.createElement("i"), size = 6 + Math.random() * 26;
+    b.style.cssText = `left:${Math.random() * 100}%;width:${size}px;height:${size}px;animation-duration:${9 + Math.random() * 12}s;animation-delay:${-Math.random() * 20}s`;
+    box.append(b);
+  }
+}
+
+// ---------- scoring ----------
+function dayKey(ms) { const d = new Date(ms); return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); }
+function cappedSet(entries) {
+  const per = {}, out = new Set();
+  for (const e of [...entries].sort((a, b) => a.at - b.at)) {
+    if (!isLike(e.type)) continue;
+    const k = dayKey(e.at); per[k] = (per[k] || 0) + 1;
+    if (per[k] > CONFIG.likeCap) out.add(e);
+  }
+  return out;
+}
+function scoreOf(entries) {
+  const over = cappedSet(entries);
+  return entries.reduce((s, e) => s + (over.has(e) ? 0 : (moveOf(e.type)?.pts || 0)), 0);
+}
+function liveEntries(p) { const start = season.startsAt || 0; return (p.entries || []).filter(e => e.at >= start); }
+function postKey(url) {
+  if (!url) return "";
+  const m = url.match(/activity(?:[-:]|%3A)(\d{15,})/i);
+  return m ? "li:" + m[1] : url.split(/[?#]/)[0].replace(/\/$/, "").toLowerCase();
+}
+
+// ---------- static UI ----------
+function renderStatic() {
+  buildTitle();
+  $("companyTag").textContent = CONFIG.company.toUpperCase() + " PRESENTS";
+  $("jpTag").textContent = CONFIG.jpTag;
+  $("subline").textContent = CONFIG.subline;
+  $("prizeLead").textContent = CONFIG.prizeLead;
+  $("prize").textContent = CONFIG.prize;
+  $("repoLink").href = CONFIG.repoUrl;
+  $("fineprint").textContent = fill(
+    `Only {company} plays count. LinkedIn posts have to mention or tag {company}. Comments, likes, reposts and stories have to be on posts from {company} (${CONFIG.instagram} on Instagram) or a teammate on this board. ` +
+    `Likes count up to ${CONFIG.likeCap} a day across both platforms. LinkedIn plays need the link. Instagram plays take the link or a short description. ` +
+    `Stories vanish after 24 hours, so log them the same day. Fake plays get removed along with their points.`);
+  $("rules").replaceChildren(...CONFIG.platforms.flatMap(p => {
+    const h = document.createElement("li"); h.className = "platname"; h.textContent = p.name.toUpperCase();
+    return [h, ...CONFIG.moves.filter(m => m.plat === p.key).map(m => {
+      const li = document.createElement("li");
+      const a = document.createElement("span"); a.textContent = m.name + " ";
+      const w = document.createElement("span"); w.className = "when"; w.textContent = "(" + fill(m.hint) + ")"; a.append(w);
+      const b = document.createElement("span"); b.className = "p"; b.textContent = "+" + m.pts;
+      li.append(a, b); return li;
+    })];
+  }));
+  renderPickers();
+}
+function renderPickers() {
+  const p = platOf(platform);
+  $("url").placeholder = p.placeholder;
+  $("url").type = p.describe ? "text" : "url";
+  $("urlLabel").textContent = p.label || "LINK TO THE POST";
+  $("platforms").replaceChildren(...CONFIG.platforms.map(pl => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "move";
+    b.setAttribute("aria-pressed", String(pl.key === platform)); b.textContent = pl.name;
+    b.onclick = () => { if (platform === pl.key) return; platform = pl.key; chosen = CONFIG.moves.find(m => m.plat === pl.key).key; renderPickers(); };
+    return b;
+  }));
+  $("moves").replaceChildren(...CONFIG.moves.filter(m => m.plat === platform).map(m => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "move";
+    b.setAttribute("aria-pressed", String(m.key === chosen));
+    b.textContent = m.name;
+    const s = document.createElement("small"); s.textContent = "+" + m.pts + " PTS"; b.append(s);
+    b.onclick = () => { chosen = m.key; renderPickers(); };
+    return b;
+  }));
+}
+
+// ---------- live UI ----------
+function ago(ms) {
+  const s = Math.max(1, Math.round((Date.now() - ms) / 1000));
+  if (s < 60) return s + "s ago"; const m = Math.round(s / 60);
+  if (m < 60) return m + "m ago"; const h = Math.round(m / 60);
+  if (h < 48) return h + "h ago"; return Math.round(h / 24) + "d ago";
+}
+let renderSeq = 0;
+async function render() {
+  const seq = ++renderSeq;
+  if (store) { const n = await store.names(players.map(p => p.id)); if (seq !== renderSeq) return; names = n; }
+  const myId = store?.myId;
+  const ranked = players.map(p => ({ ...p, score: scoreOf(liveEntries(p)) })).filter(p => p.score > 0).sort((a, b) => b.score - a.score);
+
+  $("board").replaceChildren(...ranked.slice(0, 10).map((p, i) => {
+    const tr = document.createElement("tr");
+    tr.className = (i < 3 ? "rank-" + (i + 1) : "rank-n") + (p.id === myId ? " me" : "");
+    const cells = [
+      ["", null], ["ini", p.initials || "???"], ["who", names[p.id] || (p.id === myId ? "You" : "Someone")], ["r pts", String(p.score).padStart(5, "0")],
+    ];
+    cells.forEach(([cls, text], j) => {
+      const td = document.createElement("td"); if (cls) td.className = cls;
+      if (j === 0) { const b = document.createElement("span"); b.className = "badge"; b.textContent = (i + 1) + "位"; b.setAttribute("aria-label", "Rank " + (i + 1)); td.append(b); }
+      else td.textContent = text;
+      tr.append(td);
+    });
+    return tr;
+  }));
+  $("boardEmpty").hidden = ranked.length > 0;
+
+  const all = [];
+  for (const p of players) { const es = liveEntries(p), over = cappedSet(es); for (const e of es) all.push({ p, e, zero: over.has(e) }); }
+  all.sort((a, b) => b.e.at - a.e.at);
+  $("hudPlayers").textContent = ranked.length;
+  $("hudPlays").textContent = all.length;
+
+  $("feed").replaceChildren(...all.slice(0, 15).map(({ p, e, zero }) => {
+    const m = moveOf(e.type) || { name: e.type, pts: 0, plat: "" };
+    const li = document.createElement("li");
+    const pts = document.createElement("span"); pts.className = "p" + (zero ? " zero" : ""); pts.textContent = "+" + (zero ? 0 : m.pts);
+    const t = document.createElement("span"); t.className = "t";
+    const who = document.createElement("b"); who.textContent = p.initials || "???";
+    t.append(who, document.createTextNode(fullName(m) + " · "));
+    if (e.url) { const a = document.createElement("a"); a.href = e.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "view"; t.append(a); }
+    else { const d = document.createElement("span"); d.className = "when"; d.textContent = "“" + (e.desc || "no details") + "”"; t.append(d); }
+    const w = document.createElement("span"); w.className = "when"; w.textContent = " · " + ago(e.at); t.append(w);
+    li.append(pts, t);
+    if (store && (store.isAdmin || p.id === myId)) {
+      const x = document.createElement("button"); x.type = "button"; x.className = "x"; x.textContent = "X";
+      x.setAttribute("aria-label", "Remove this play"); x.onclick = () => removeEntry(p.id, e.id); li.append(x);
+    }
+    return li;
+  }));
+  $("feedEmpty").hidden = all.length > 0;
+
+  const mine = players.find(p => p.id === myId);
+  if (mine?.initials && document.activeElement !== $("initials") && !$("initials").value) $("initials").value = mine.initials;
+}
+function renderClock() {
+  if (!season.endsAt) { $("hudTime").textContent = "--"; return; }
+  const left = season.endsAt - Date.now();
+  if (left <= 0) { $("hudTime").textContent = "GAME OVER"; return; }
+  const d = Math.floor(left / 864e5), h = Math.floor(left / 36e5) % 24, m = Math.floor(left / 6e4) % 60;
+  $("hudTime").textContent = d > 0 ? `${d}D ${h}H` : `${h}H ${m}M`;
+}
+function setSeasonInputs() {
+  const f = ms => { const d = new Date(ms); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  if (season.startsAt) $("startDate").value = f(season.startsAt);
+  if (season.endsAt) $("endDate").value = f(season.endsAt);
+}
+
+// ---------- feedback ----------
+function sayIn(id, text, ok) { const el = $(id); el.className = "msg " + (ok ? "ok" : "bad"); el.textContent = text || ""; }
+const say = (t, ok) => sayIn("msg", t, ok);
+let toastTimer;
+function toast(text, ok) {
+  document.querySelector(".toast")?.remove();
+  const el = document.createElement("div"); el.className = "toast" + (ok ? "" : " bad"); el.setAttribute("role", "status"); el.textContent = text;
+  document.body.append(el); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.remove(), 2800);
+}
+function pop(pts) {
+  const el = document.createElement("div"); el.className = "pop";
+  const inner = document.createElement("div");
+  const b = document.createElement("b"); b.textContent = "+" + pts;
+  const s = document.createElement("span"); s.textContent = CONFIG.cheers[Math.floor(Math.random() * CONFIG.cheers.length)];
+  inner.append(b, s); el.append(inner); document.body.append(el); setTimeout(() => el.remove(), 1300);
+}
+const accessMsg = e => e?.code === "permission_denied" || e?.code === "not_granted"
+  ? `You can look but not play yet. Ask ${CONFIG.gameMaster} for access.` : "That didn't save. Try again.";
+
+// ---------- writes ----------
+let chain = Promise.resolve();
+const queue = fn => (chain = chain.then(fn, fn));
+function cleanInitials() { return $("initials").value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 3); }
+
+$("playForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  if (!store || !store.myId) { say("Sign in to claude.ai to play.", false); return; }
+  const initials = cleanInitials();
+  if (initials.length < 2) { say("Enter 2 or 3 initials first.", false); $("initials").focus(); return; }
+  const m = moveOf(chosen), plat = platOf(m.plat), raw = $("url").value.trim();
+  let url = "", desc = "";
+  if (/^https?:\/\//i.test(raw) || !plat.describe) {
+    if (!plat.host.test(raw)) { say(`Paste a ${plat.name} link to the post.`, false); $("url").focus(); return; }
+    url = raw;
+  } else {
+    if (raw.length < 4) { say("Paste the link or describe the post in a few words.", false); $("url").focus(); return; }
+    desc = raw.slice(0, 140);
+  }
+  if (season.endsAt && Date.now() > season.endsAt) { say("The contest is over. GAME OVER.", false); return; }
+  if (season.startsAt && Date.now() < season.startsAt) { say("The contest hasn't started yet.", false); return; }
+  const mine = players.find(p => p.id === store.myId);
+  const entries = [...(mine?.entries || [])];
+  const key = postKey(url);
+  const same = e => e.type === chosen && (url ? postKey(e.url) === key : (e.desc || "").toLowerCase() === desc.toLowerCase());
+  if (entries.some(same)) { say("That one is already on your score.", false); return; }
+  const entry = { id: rid(), type: chosen, url, at: Date.now() }; if (desc) entry.desc = desc;
+  entries.push(entry);
+  try {
+    await queue(() => store.savePlayer(store.myId, { ...(mine || {}), id: undefined, initials, entries, score: scoreOf(entries), updatedAt: Date.now() }));
+    $("url").value = ""; say("", true);
+    const capped = cappedSet(entries).has(entry);
+    $("loggedText").textContent = capped ? `${fullName(m)} saved. You hit today's like limit, so this one scores 0.` : `${fullName(m)} · +${m.pts} points added.`;
+    $("loggedCard").hidden = false;
+    if (!capped) pop(m.pts);
+  } catch (e) { say(accessMsg(e), false); }
+});
+$("url").addEventListener("input", () => { $("loggedCard").hidden = true; });
+
+async function removeEntry(pid, eid) {
+  const p = players.find(x => x.id === pid); if (!p) return;
+  const entries = (p.entries || []).filter(e => e.id !== eid);
+  try {
+    await queue(() => store.savePlayer(pid, { ...p, id: undefined, entries, score: scoreOf(entries), updatedAt: Date.now() }));
+    toast("Play removed. Score updated.", true);
+  } catch { toast("Couldn't remove that play. Try again.", false); }
+}
+
+$("seasonForm").addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const sv = $("startDate").value, ev2 = $("endDate").value;
+  if (!sv) { sayIn("seasonMsg", "Pick a start date first.", false); return; }
+  if (!ev2) { sayIn("seasonMsg", "Pick an end date first.", false); return; }
+  const [sy, sm, sd] = sv.split("-").map(Number), [ey, em, ed] = ev2.split("-").map(Number);
+  const startsAt = new Date(sy, sm - 1, sd, 0, 0, 0).getTime(), endsAt = new Date(ey, em - 1, ed, 23, 59, 59).getTime();
+  if (endsAt <= startsAt) { sayIn("seasonMsg", "The end date has to come after the start date.", false); return; }
+  try {
+    await store.saveSeason({ startsAt, endsAt });
+    const fmt = ms => new Date(ms).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    sayIn("seasonMsg", `Saved. The contest runs ${fmt(startsAt)} to ${fmt(endsAt)} at 11:59 PM.`, true);
+  } catch (e) { sayIn("seasonMsg", e?.code === "permission_denied" ? "Only editors can change the dates." : "That didn't save. Try again.", false); }
+});
+
+// ---------- storage: shared board inside Claude, demo board everywhere else ----------
+function strip(data) { const o = { ...data }; delete o.id; return o; }
+
+function claudeStore(db, user, me) {
+  return {
+    mode: "live", myId: me?.id || null, isAdmin: !!me?.canEdit,
+    onPlayers: cb => db.collection("players").onSnapshot(s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), () => {}),
+    onSeason: cb => db.doc("config/season").onSnapshot(s => cb(s.exists ? s.data() : {}), () => {}),
+    savePlayer: (id, data) => db.doc("players/" + id).set(strip(data)),
+    saveSeason: s => db.doc("config/season").set(s),
+    names: async ids => {
+      if (!user || !ids.length) return {};
+      try { const ps = await user.profiles(ids); const o = {}; for (const id in ps) o[id] = ps[id].name || ""; return o; } catch { return {}; }
+    },
+  };
+}
+
+function demoState() {
+  const now = Date.now(), H = 36e5;
+  const e = (type, h, desc) => ({ id: rid(), type, url: "", desc, at: now - h * H });
+  const P = (initials, label, entries) => ({ initials, label, entries });
+  return {
+    season: { startsAt: now - 6 * 24 * H, endsAt: now + 12 * 24 * H },
+    players: {
+      "demo-koi": P("KOI", "Koi Captain", [e("post", 70, "Launch day post"), e("post", 30, "Why I love our team"), e("reshare", 50, "Product news, with my take"), e("comment", 6, "Cheered on a teammate"), e("ig_story", 2, "Office tour story")]),
+      "demo-ray": P("RAY", "Manta Ray", [e("post", 40, "Customer win post"), e("repost", 20, "Hiring post"), e("comment", 9, "Congrats comment"), e("like", 3, "Liked the recap"), e("ig_repost", 12, "Event reel")]),
+      "demo-orc": P("ORC", "Orca Queen", [e("reshare", 60, "Award news"), e("comment", 44, "Big thread reply"), e("ig_story", 26, "Behind the scenes"), e("ig_comment", 5, "Reel comment"), e("like", 4, "Liked a teammate post")]),
+      "demo-jel": P("JEL", "Jelly Bean", [e("repost", 15, "Webinar invite"), e("comment", 8, "Teammate post"), e("ig_like", 1, "Liked the reel")]),
+      "demo-tak": P("TAK", "Tako Tim", [e("comment", 22, "Launch thread"), e("like", 7, "Liked the launch")]),
+    },
+  };
+}
+function localStore() {
+  const KEY = "bubble-board-v1";
+  let state = null;
+  try { state = JSON.parse(localStorage.getItem(KEY)); } catch {}
+  if (!state || !state.players) state = demoState();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} };
+  save();
+  const subs = { p: [], s: [] };
+  const list = () => Object.entries(state.players).map(([id, d]) => ({ id, ...d }));
+  const emit = () => { subs.p.forEach(f => f(list())); subs.s.forEach(f => f({ ...state.season })); };
+  return {
+    mode: "demo", myId: "me", isAdmin: true,
+    onPlayers: cb => { subs.p.push(cb); cb(list()); },
+    onSeason: cb => { subs.s.push(cb); cb({ ...state.season }); },
+    savePlayer: async (id, data) => { state.players[id] = strip(data); save(); emit(); },
+    saveSeason: async s => { state.season = s; save(); emit(); },
+    names: async ids => Object.fromEntries(ids.map(id => [id, state.players[id]?.label || (id === "me" ? "You" : "")])),
+    reset: () => { state = demoState(); save(); emit(); },
+    clear: () => { state = { season: state.season, players: {} }; save(); emit(); },
+  };
+}
+
+function start(s) {
+  store = s;
+  const demo = s.mode === "demo";
+  $("modeTag").textContent = demo ? "DEMO MODE · this browser only" : "LIVE · team board";
+  $("modeTag").classList.toggle("demo", demo);
+  $("adminPanel").hidden = !s.isAdmin;
+  $("demoBtns").hidden = !demo;
+  if (demo) $("adminNote").textContent = "Demo mode saves to this browser only. Open this board inside Claude to give your team one shared leaderboard.";
+  s.onPlayers(list => { players = list; render(); });
+  s.onSeason(v => { season = v || {}; setSeasonInputs(); renderClock(); render(); });
+}
+$("resetDemo").onclick = () => { store?.reset?.(); toast("Demo divers are back.", true); };
+$("clearAll").onclick = () => { if (confirm("Clear every score on this board?")) { store?.clear?.(); toast("Board cleared.", true); } };
+
+// ---------- boot ----------
+renderStatic();
+buildBubbles();
+render();
+setInterval(renderClock, 30000);
+setInterval(() => { if (players.length) render(); }, 60000);
+
+(async () => {
+  const c = window.claude;
+  if (!c || typeof c.use !== "function") { start(localStore()); return; }
+  const [db, user] = await Promise.all([c.use("db"), c.use("user")]);
+  if (!db) {
+    $("modeTag").textContent = "SIGN IN TO PLAY";
+    $("boardEmpty").querySelector("b").nextSibling.textContent = "Sign in to claude.ai to see the scores and play.";
+    return;
+  }
+  const me = user ? await user.me() : null;
+  start(claudeStore(db, user, me));
+})();
+</script>
+</body>
+</html>
