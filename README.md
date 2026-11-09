@@ -1,8 +1,8 @@
-# Bubble Board 🫧
+# Bubble Board 🕹️
 
-An underwater, Japanese-arcade high score board for employee advocacy.
+A neon arcade high score board for employee advocacy.
 
-Your team logs every LinkedIn and Instagram play (posts, reshares, comments, likes, stories). Each play scores points, the board ranks everyone, and the top diver wins the prize.
+Your team logs every LinkedIn and Instagram play (posts, reshares, comments, likes, stories). Each play scores points, the board ranks everyone, and the top player wins the prize.
 
 ![Bubble Board preview](preview.jpg)
 
@@ -14,8 +14,8 @@ Built with Claude by Alyssa Newman, [PVLP Social](https://pvlpsocial.com).
 
 ## What's inside
 
-- Bubble-letter marquee, rising bubbles, swaying kelp and a fish or two
-- High scores with 1位 / 2位 / 3位 pearl badges
+- Glowing neon bubble letters, a synthwave grid floor and CRT scanlines
+- High scores with neon 1ST / 2ND / 3RD badges
 - Log a play: pick LinkedIn or Instagram, pick the move, paste the link
 - A rules panel that builds itself from your point values
 - A live feed of the latest plays
@@ -31,7 +31,7 @@ Built with Claude by Alyssa Newman, [PVLP Social](https://pvlpsocial.com).
 | Who sees the scores | Only the person on that browser | Everyone you share it with |
 | Good for | Showing people, testing your setup | Running a real contest |
 
-The page detects where it's running. On GitHub it opens in demo mode with five sample divers. Inside Claude it switches to one shared, live board for the whole team.
+The page detects where it's running. On GitHub it opens in demo mode with five sample players. Inside Claude it switches to one shared, live board for the whole team.
 
 ## Make your own with Claude (about 5 minutes)
 

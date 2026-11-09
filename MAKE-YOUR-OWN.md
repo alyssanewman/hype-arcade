@@ -3,7 +3,7 @@
 Attach `index.html` to a new chat at [claude.ai](https://claude.ai), then copy and paste everything in the box below.
 
 ```
-I'm attaching index.html. It's "Bubble Board," an underwater arcade-style
+I'm attaching index.html. It's "Bubble Board," a neon arcade-style
 employee advocacy leaderboard. My team logs LinkedIn and Instagram plays
 and competes for a prize.
 

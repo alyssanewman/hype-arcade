@@ -4,34 +4,33 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Bubble Board</title>
-<meta name="description" content="An underwater, Japanese-arcade style high score board for employee advocacy. Teammates log their LinkedIn and Instagram plays and race for the top spot.">
+<meta name="description" content="A neon arcade high score board for employee advocacy. Teammates log their LinkedIn and Instagram plays and race for the top spot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Mochiy+Pop+One&family=Rubik+Bubbles&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Press+Start+2P&family=Rubik+Bubbles&family=VT323&display=swap">
 <style>
 /* =========================================================
    BUBBLE BOARD
-   One deep-sea arcade cabinet: marquee, high scores, log a play,
-   how to score, latest plays, game master. Single dark ocean look by design.
+   One neon arcade cabinet: marquee, high scores, log a play,
+   how to score, latest plays, game master. Single dark neon look by design.
    ========================================================= */
 :root {
-  --abyss: #020b24;
-  --deep: #04224f;
-  --sea: #0a4f8f;
-  --aqua: #5ff2ff;
-  --foam: #e8fbff;
-  --dim: #8fbbd9;
-  --coral: #ff6f91;
-  --sun: #ffd84d;
-  --kelp: #43e597;
-  --violet: #a68bff;
-  --ink: #021027;
-  --red: #ff5c6c;
-  --glass: rgba(150, 225, 255, .07);
-  --line: rgba(140, 220, 255, .26);
-  --bubble: "Rubik Bubbles", "Mochiy Pop One", system-ui, sans-serif;
-  --pop: "Mochiy Pop One", system-ui, sans-serif;
-  --pixel: "DotGothic16", ui-monospace, monospace;
+  --night: #07020f;
+  --plum: #14072b;
+  --panel: rgba(18, 7, 38, .95);
+  --text: #f6eeff;
+  --dim: #a99bc9;
+  --pink: #ff2bd6;
+  --cyan: #22f3ff;
+  --yellow: #ffe94a;
+  --green: #39ff88;
+  --purple: #a259ff;
+  --orange: #ff8a1f;
+  --red: #ff4d6d;
+  --bubble: "Rubik Bubbles", "Fredoka", system-ui, sans-serif;
+  --arcade: "Press Start 2P", ui-monospace, monospace;
+  --digits: "VT323", ui-monospace, monospace;
+  --body: "Fredoka", system-ui, sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -39,309 +38,246 @@
 html { scroll-behavior: smooth; }
 body {
   margin: 0; min-height: 100vh;
-  font-family: var(--pop); font-size: 15px; line-height: 1.5; color: var(--foam);
+  font-family: var(--body); font-size: 16px; line-height: 1.5; color: var(--text);
   background:
-    radial-gradient(120% 55% at 50% -8%, rgba(95,242,255,.32), transparent 62%),
-    linear-gradient(180deg, var(--sea) 0%, var(--deep) 42%, var(--abyss) 100%);
-  background-color: var(--abyss);
+    radial-gradient(90% 50% at 50% 0%, rgba(162,89,255,.35), transparent 65%),
+    radial-gradient(60% 40% at 50% 100%, rgba(255,43,214,.25), transparent 70%),
+    var(--night);
   background-attachment: fixed;
-  padding: 24px max(16px, env(safe-area-inset-right)) 170px max(16px, env(safe-area-inset-left));
+  padding: 24px max(16px, env(safe-area-inset-right)) 120px max(16px, env(safe-area-inset-left));
   overflow-x: hidden;
 }
-@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+/* CRT scanlines over everything */
+body::after {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 80;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.22) 2px 3px);
+}
 
-/* ---------- ocean scenery ---------- */
-.rays {
-  position: fixed; inset: -10% -20% auto; height: 80vh; pointer-events: none; z-index: 0;
-  background: repeating-linear-gradient(100deg, transparent 0 60px, rgba(180,245,255,.06) 60px 90px, transparent 90px 170px);
-  mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 85%);
-  animation: sway 14s ease-in-out infinite alternate;
+/* ---------- neon grid floor ---------- */
+.floor { position: fixed; left: -50%; right: -50%; bottom: 0; height: 42vh; pointer-events: none; z-index: 0; perspective: 300px; overflow: hidden; }
+.floor::before {
+  content: ""; position: absolute; inset: 0 0 -100% 0;
+  background:
+    linear-gradient(to right, rgba(255,43,214,.55) 2px, transparent 2px) 0 0 / 70px 70px,
+    linear-gradient(to bottom, rgba(255,43,214,.55) 2px, transparent 2px) 0 0 / 70px 70px;
+  transform: rotateX(62deg); transform-origin: top center;
+  animation: drive 2.4s linear infinite;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 35%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 35%);
 }
-@keyframes sway { from { transform: skewX(-6deg) translateX(-3%); } to { transform: skewX(6deg) translateX(3%); } }
-.bubbles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-.bubbles i {
-  position: absolute; bottom: -60px; border-radius: 50%;
-  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.9) 0 9%, rgba(160,240,255,.25) 10% 55%, rgba(160,240,255,.08) 56%);
-  border: 1px solid rgba(200,250,255,.45);
-  animation: rise linear infinite;
-}
-@keyframes rise {
-  0% { transform: translate(0, 0); opacity: 0; }
-  8% { opacity: 1; }
-  50% { transform: translate(18px, -55vh); }
-  100% { transform: translate(-12px, -115vh); opacity: .2; }
-}
-.seabed { position: fixed; left: 0; right: 0; bottom: 0; height: 150px; pointer-events: none; z-index: 0; }
-.seabed svg { width: 100%; height: 100%; display: block; }
-.kelp { transform-origin: bottom center; animation: kelp 5s ease-in-out infinite alternate; }
-.kelp.b { animation-duration: 6.5s; animation-delay: -2s; }
-.kelp.c { animation-duration: 4.2s; animation-delay: -1s; }
-@keyframes kelp { from { transform: skewX(-7deg); } to { transform: skewX(7deg); } }
-.marquee > :not(.fish) { position: relative; z-index: 1; }
-.fish { position: absolute; z-index: 0; opacity: .85; top: 18px; left: -80px; width: 54px; animation: swim 19s linear infinite; }
-.fish.two { top: 70%; width: 34px; animation-duration: 27s; animation-delay: -9s; }
-@keyframes swim { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 160px)); } }
-@media (prefers-reduced-motion: reduce) {
-  .rays, .kelp, .fish, .bubbles i, .bob span, .blink { animation: none !important; }
-  .bubbles, .fish { display: none; }
-}
+.floor::after { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--pink); box-shadow: 0 0 18px 6px rgba(255,43,214,.6); opacity: .7; }
+@keyframes drive { from { background-position: 0 0, 0 0; } to { background-position: 0 70px, 0 70px; } }
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.stars i { position: absolute; width: 2px; height: 2px; background: #fff; border-radius: 50%; animation: twinkle 3s ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: .15; } }
 
 /* ---------- cabinet ---------- */
-.cabinet { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+.cabinet { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
 
 .marquee {
-  position: relative; overflow: hidden; text-align: center;
-  padding: 26px 16px 28px; border-radius: 36px;
-  background:
-    radial-gradient(80% 70% at 50% 0%, rgba(95,242,255,.28), transparent 70%),
-    linear-gradient(180deg, rgba(10,79,143,.85), rgba(4,34,79,.9));
-  border: 4px solid var(--aqua);
-  box-shadow: 0 0 0 6px var(--ink), 0 0 0 10px rgba(95,242,255,.35), 0 18px 50px rgba(0,0,0,.45), inset 0 0 40px rgba(95,242,255,.18);
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  text-align: center; padding: 28px 16px 30px; border-radius: 28px;
+  background: radial-gradient(80% 70% at 50% 0%, rgba(255,43,214,.18), transparent 70%), var(--panel);
+  border: 3px solid var(--pink);
+  box-shadow: 0 0 8px var(--pink), 0 0 30px rgba(255,43,214,.55), inset 0 0 8px var(--pink), inset 0 0 40px rgba(255,43,214,.25);
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
 }
 .tagrow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .tag {
-  font-family: var(--pop); font-size: 12px; letter-spacing: .08em;
-  padding: 5px 12px; border-radius: 999px; background: var(--ink); color: var(--aqua);
-  border: 2px solid rgba(95,242,255,.5);
+  font-family: var(--arcade); font-size: 10px; letter-spacing: .12em; line-height: 1.4;
+  padding: 7px 12px; border-radius: 999px; color: var(--cyan);
+  border: 2px solid var(--cyan); box-shadow: 0 0 10px rgba(34,243,255,.45), inset 0 0 6px rgba(34,243,255,.3);
 }
-.tag.jp { color: var(--coral); border-color: rgba(255,111,145,.6); }
-.tag.mode { color: var(--kelp); border-color: rgba(67,229,151,.55); }
-.tag.mode.demo { color: var(--sun); border-color: rgba(255,216,77,.55); }
+.tag.mode { color: var(--green); border-color: var(--green); box-shadow: 0 0 10px rgba(57,255,136,.4); }
+.tag.mode.demo { color: var(--yellow); border-color: var(--yellow); box-shadow: 0 0 10px rgba(255,233,74,.4); }
 
 h1 {
-  margin: 4px 0 0; font-family: var(--bubble); font-weight: 400;
-  font-size: clamp(50px, 14vw, 112px); line-height: .92; letter-spacing: .01em;
-  display: flex; flex-direction: column; align-items: center;
+  margin: 6px 0 4px; font-family: var(--bubble); font-weight: 400;
+  font-size: clamp(50px, 14vw, 112px); line-height: 1; letter-spacing: .02em;
+  display: flex; flex-direction: column; align-items: center; gap: .08em;
 }
 h1 .line { display: block; white-space: nowrap; }
-h1 .line span {
-  display: inline-block;
-  -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill;
-}
-h1 .l1 span { color: var(--sun);  text-shadow: 0 5px 0 var(--coral), 0 10px 0 var(--ink), 0 0 28px rgba(255,216,77,.45); }
-h1 .l2 span { color: var(--aqua); text-shadow: 0 5px 0 var(--violet), 0 10px 0 var(--ink), 0 0 28px rgba(95,242,255,.45); }
-.bob span { animation: bob 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * -.18s); }
-@keyframes bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(2deg); } }
+h1 .line span { display: inline-block; }
+h1 .l1 { color: #ffe3fa; text-shadow: 0 0 3px #fff, 0 0 10px var(--pink), 0 0 24px var(--pink), 0 0 48px var(--pink), 0 0 80px rgba(255,43,214,.6); }
+h1 .l2 { color: #dcfdff; text-shadow: 0 0 3px #fff, 0 0 10px var(--cyan), 0 0 24px var(--cyan), 0 0 48px var(--cyan), 0 0 80px rgba(34,243,255,.6); }
+.flicker span { animation: flicker 6s linear infinite; animation-delay: calc(var(--i) * -.9s); }
+@keyframes flicker { 0%, 91%, 93%, 96%, 100% { opacity: 1; } 92%, 95% { opacity: .35; } }
 
-.sub { font-family: var(--pop); font-size: clamp(13px, 3.4vw, 17px); color: var(--foam); margin: 6px 0 0; max-width: 34ch; text-wrap: balance; }
-.prize {
-  display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
-  font-family: var(--pop); font-size: clamp(14px, 3.6vw, 18px); color: var(--kelp);
-}
-.prize b {
-  font-family: var(--bubble); font-weight: 400; font-size: 1.7em; color: var(--sun);
-  -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--coral);
-}
-.hud { display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; }
-.hud span {
-  font-family: var(--pixel); font-size: 15px; color: var(--dim);
-  background: rgba(2,16,39,.7); border: 2px solid var(--line); border-radius: 14px; padding: 4px 12px;
-}
-.hud b { color: var(--foam); font-weight: 400; margin-left: 4px; }
+.sub { margin: 0; font-size: clamp(15px, 3.6vw, 18px); max-width: 34ch; text-wrap: balance; color: var(--text); }
+.prize { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; font-family: var(--arcade); font-size: clamp(10px, 2.6vw, 13px); color: var(--green); text-shadow: 0 0 10px rgba(57,255,136,.7); }
+.prize b { font-family: var(--bubble); font-weight: 400; font-size: clamp(34px, 8vw, 46px); color: #fffbd6; text-shadow: 0 0 4px #fff, 0 0 14px var(--yellow), 0 0 32px var(--yellow); }
+.hud { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.hud span { font-family: var(--arcade); font-size: 9px; color: var(--dim); border: 2px solid rgba(162,89,255,.6); border-radius: 12px; padding: 7px 12px; display: inline-flex; align-items: center; gap: 8px; }
+.hud b { font-family: var(--digits); font-weight: 400; font-size: 24px; line-height: .8; color: var(--text); }
 .start {
-  font-family: var(--pop); font-size: 16px; color: var(--ink); text-decoration: none; cursor: pointer;
-  background: linear-gradient(180deg, #fff3a6, var(--sun) 55%, #f2b81e);
-  border: 3px solid var(--ink); border-radius: 999px; padding: 12px 26px;
-  box-shadow: 0 6px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.7);
-  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--arcade); font-size: 13px; letter-spacing: .06em; color: #1a0630; text-decoration: none; cursor: pointer;
+  background: var(--yellow); border: 0; border-radius: 999px; padding: 15px 28px;
+  box-shadow: 0 6px 0 #b3a000, 0 0 26px rgba(255,233,74,.6);
+  display: inline-block;
 }
-.start:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink), inset 0 3px 0 rgba(255,255,255,.7); }
-.start small { font-size: 12px; opacity: .75; }
-.blink { animation: blink 1.2s steps(1) infinite; }
-@keyframes blink { 50% { opacity: .25; } }
-:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+.start:active { transform: translateY(4px); box-shadow: 0 2px 0 #b3a000, 0 0 18px rgba(255,233,74,.5); }
+.blink { animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+:focus-visible { outline: 3px solid var(--yellow); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .floor::before, .flicker span, .blink, .stars i { animation: none !important; }
+}
 
-/* ---------- panels ---------- */
+/* ---------- panels: each one is a different neon tube ---------- */
 .panel {
-  position: relative; min-width: 0;
-  background: linear-gradient(180deg, rgba(150,225,255,.10), rgba(150,225,255,.04)), rgba(2,16,39,.55);
-  border: 3px solid var(--line); border-radius: 30px; padding: 22px 20px;
-  box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 12px 30px rgba(0,0,0,.3);
+  --tube: var(--cyan);
+  position: relative; min-width: 0; background: var(--panel);
+  border: 3px solid var(--tube); border-radius: 26px; padding: 22px 20px;
+  box-shadow: 0 0 6px var(--tube), 0 0 22px color-mix(in srgb, var(--tube) 40%, transparent), inset 0 0 18px color-mix(in srgb, var(--tube) 18%, transparent);
   display: flex; flex-direction: column; gap: 16px;
-  backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
 }
-.panel::after {
-  content: ""; position: absolute; top: 12px; right: 18px; width: 26px; height: 14px; border-radius: 50%;
-  background: rgba(255,255,255,.35); transform: rotate(-20deg); pointer-events: none;
-}
-.panel.hot { border-color: var(--aqua); box-shadow: 0 0 26px rgba(95,242,255,.25), inset 0 2px 0 rgba(255,255,255,.15); }
-.ph { text-align: center; display: flex; flex-direction: column; gap: 2px; align-items: center; }
-.ph .jp { font-family: var(--pixel); font-size: 14px; color: var(--coral); letter-spacing: .2em; }
-h2 { margin: 0; font-family: var(--bubble); font-weight: 400; font-size: clamp(24px, 6vw, 32px); color: var(--foam); -webkit-text-stroke: 2px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--sea); }
+.panel.t-pink { --tube: var(--pink); }
+.panel.t-yellow { --tube: var(--yellow); }
+.panel.t-green { --tube: var(--green); }
+.panel.t-purple { --tube: var(--purple); border-style: dashed; }
+.ph { text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.ph .eyebrow { font-family: var(--arcade); font-size: 9px; letter-spacing: .18em; color: var(--dim); }
+h2 { margin: 0; font-family: var(--bubble); font-weight: 400; font-size: clamp(26px, 6vw, 34px); color: #fff; text-shadow: 0 0 3px #fff, 0 0 12px var(--tube), 0 0 28px var(--tube); }
 .note { color: var(--dim); margin: 0; text-align: center; }
 
 /* ---------- high scores ---------- */
 .scores { width: 100%; border-collapse: separate; border-spacing: 0 8px; font-variant-numeric: tabular-nums; }
-.scores th { font-family: var(--pixel); font-weight: 400; font-size: 13px; color: var(--dim); text-align: left; padding: 0 10px; }
-.scores td { padding: 10px; background: rgba(2,16,39,.6); white-space: nowrap; }
+.scores th { font-family: var(--arcade); font-weight: 400; font-size: 9px; color: var(--dim); text-align: left; padding: 0 10px 2px; }
+.scores td { padding: 8px 10px; background: rgba(255,255,255,.04); white-space: nowrap; }
 .scores td:first-child { border-radius: 999px 0 0 999px; width: 1%; }
 .scores td:last-child { border-radius: 0 999px 999px 0; }
 .scores .r { text-align: right; }
-.scores .ini { font-family: var(--pixel); font-size: clamp(20px, 5vw, 26px); letter-spacing: .15em; }
-.scores .who { font-size: 14px; color: var(--dim); white-space: normal; }
-.scores .pts { font-family: var(--pixel); font-size: clamp(20px, 5vw, 26px); }
+.scores .ini { font-family: var(--arcade); font-size: clamp(14px, 3.6vw, 18px); letter-spacing: .12em; color: var(--c); text-shadow: 0 0 10px var(--c); }
+.scores .who { font-size: 15px; color: var(--dim); white-space: normal; }
+.scores th.who { font-size: 9px; }
+.scores .pts { font-family: var(--digits); font-size: clamp(30px, 7vw, 38px); line-height: 1; color: var(--c); text-shadow: 0 0 10px var(--c); }
 .badge {
-  width: 46px; height: 46px; border-radius: 50%; display: inline-grid; place-items: center;
-  font-family: var(--pixel); font-size: 15px; color: var(--ink);
-  background: radial-gradient(circle at 24% 20%, rgba(255,255,255,.95) 0 7%, transparent 8%), radial-gradient(circle at 50% 40%, var(--c, var(--dim)) 0 62%, color-mix(in srgb, var(--c, var(--dim)) 70%, #000) 100%);
-  border: 2px solid var(--ink);
+  width: 50px; height: 50px; border-radius: 50%; display: inline-grid; place-items: center;
+  font-family: var(--arcade); font-size: 10px; color: var(--c);
+  border: 3px solid var(--c); box-shadow: 0 0 10px var(--c), inset 0 0 8px var(--c);
+  text-shadow: 0 0 8px var(--c);
 }
-.rank-1 { --c: var(--sun); }
-.rank-2 { --c: var(--aqua); }
-.rank-3 { --c: var(--coral); }
-.rank-n { --c: #8aa7c4; }
-.rank-1 .ini, .rank-1 .pts { color: var(--sun); text-shadow: 0 0 10px rgba(255,216,77,.6); }
-.rank-2 .ini, .rank-2 .pts { color: var(--aqua); }
-.rank-3 .ini, .rank-3 .pts { color: var(--coral); }
-tr.me td { background: rgba(255,216,77,.12); }
-tr.me td:first-child { box-shadow: inset 4px 0 0 var(--sun); }
+.rank-1 { --c: var(--yellow); }
+.rank-2 { --c: var(--cyan); }
+.rank-3 { --c: var(--pink); }
+.rank-n { --c: #d9ccff; }
+.rank-n .ini, .rank-n .pts, .rank-n .badge { text-shadow: none; }
+.rank-n .badge { box-shadow: none; border-color: rgba(217,204,255,.5); }
+tr.me td { background: rgba(255,233,74,.12); }
 .empty { text-align: center; color: var(--dim); padding: 12px 0; }
-.empty b { display: block; font-family: var(--pop); font-weight: 400; font-size: 18px; color: var(--sun); margin-bottom: 6px; }
-@media (max-width: 520px) { .scores .who { display: none; } .badge { width: 38px; height: 38px; font-size: 13px; } }
+.empty b { display: block; font-family: var(--arcade); font-weight: 400; font-size: 12px; color: var(--yellow); margin-bottom: 10px; text-shadow: 0 0 10px rgba(255,233,74,.6); }
+@media (max-width: 520px) { .scores .who { display: none; } .badge { width: 42px; height: 42px; font-size: 9px; } }
 
 /* ---------- controls ---------- */
-.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 26px; }
-form { display: flex; flex-direction: column; gap: 16px; }
-label, .lbl { display: block; font-family: var(--pixel); font-size: 14px; color: var(--aqua); letter-spacing: .08em; margin-bottom: 8px; }
-.lbl small, label small { color: var(--dim); letter-spacing: 0; }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 28px; }
+form { display: flex; flex-direction: column; gap: 18px; }
+label, .lbl { display: block; font-family: var(--arcade); font-size: 9px; letter-spacing: .12em; color: var(--cyan); margin-bottom: 10px; }
 input[type=text], input[type=url], input[type=date] {
-  width: 100%; font-family: var(--pop); font-size: 16px; color: var(--foam);
-  background: rgba(2,16,39,.8); border: 3px solid var(--line); border-radius: 18px; padding: 10px 14px;
+  width: 100%; font-family: var(--body); font-size: 17px; color: var(--text);
+  background: rgba(7,2,15,.85); border: 2px solid rgba(162,89,255,.55); border-radius: 16px; padding: 11px 14px;
 }
-input::placeholder { color: #5f86a8; }
-input:focus { border-color: var(--aqua); outline: none; box-shadow: 0 0 0 4px rgba(95,242,255,.2); }
-#initials { font-family: var(--pixel); font-size: 28px; letter-spacing: .45em; text-transform: uppercase; color: var(--sun); width: 8em; text-align: center; padding-left: 22px; }
+input::placeholder { color: #6f5f94; }
+input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rgba(34,243,255,.2), 0 0 14px rgba(34,243,255,.35); }
+#initials { font-family: var(--arcade); font-size: 22px; letter-spacing: .4em; text-transform: uppercase; color: var(--yellow); width: 9em; text-align: center; padding-left: 24px; text-shadow: 0 0 10px rgba(255,233,74,.6); }
 .moves { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .move {
-  font-family: var(--pop); font-size: 13px; line-height: 1.35; color: var(--foam); text-align: left; cursor: pointer;
-  background: rgba(2,16,39,.75); border: 3px solid var(--line); border-radius: 20px; padding: 10px 12px;
-  transition: transform .12s ease, border-color .12s ease;
+  font-family: var(--body); font-weight: 600; font-size: 15px; line-height: 1.3; color: var(--text); text-align: left; cursor: pointer;
+  background: rgba(7,2,15,.85); border: 2px solid rgba(162,89,255,.55); border-radius: 18px; padding: 10px 14px;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
 }
-.move small { display: block; font-family: var(--pixel); font-size: 15px; color: var(--kelp); margin-top: 2px; }
-.move:hover { transform: translateY(-2px); }
-.move[aria-pressed=true] { border-color: var(--coral); background: rgba(255,111,145,.16); box-shadow: 0 0 16px rgba(255,111,145,.35); }
-.plat .move { text-align: center; font-size: 14px; }
-.msg { margin: 0; min-height: 1.4em; font-size: 14px; }
+.move small { display: block; font-family: var(--digits); font-weight: 400; font-size: 21px; line-height: 1.1; color: var(--green); margin-top: 2px; }
+.move:hover { transform: translateY(-2px); border-color: var(--cyan); }
+.move[aria-pressed=true] { border-color: var(--pink); color: #fff; box-shadow: 0 0 14px rgba(255,43,214,.6), inset 0 0 10px rgba(255,43,214,.3); }
+.plat .move { text-align: center; }
+.msg { margin: 0; min-height: 1.4em; font-size: 15px; }
 .msg.bad { color: var(--red); }
-.msg.ok { color: var(--kelp); }
-.logged {
-  display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 22px;
-  border: 3px solid var(--kelp); background: rgba(67,229,151,.1);
-}
-.logged b { display: block; font-weight: 400; color: var(--kelp); }
-.check { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--kelp); border: 2px solid var(--ink); }
-.check svg { width: 20px; height: 20px; stroke: var(--ink); stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.msg.ok { color: var(--green); }
+.logged { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 20px; border: 2px solid var(--green); box-shadow: 0 0 14px rgba(57,255,136,.35); }
+.logged b { display: block; font-family: var(--arcade); font-weight: 400; font-size: 10px; color: var(--green); margin-bottom: 6px; }
+.check { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; border: 3px solid var(--green); box-shadow: 0 0 12px var(--green); }
+.check svg { width: 20px; height: 20px; stroke: var(--green); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
 .rules { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.rules li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 7px; border-bottom: 2px dotted var(--line); }
-.rules li.platname { border: 0; padding: 8px 0 0; font-family: var(--pixel); font-size: 15px; color: var(--coral); letter-spacing: .1em; }
-.rules .when { color: var(--dim); font-size: 13px; }
-.rules .p { font-family: var(--pixel); font-size: 18px; color: var(--sun); white-space: nowrap; }
-.fine { color: var(--dim); font-size: 13px; margin: 0; }
+.rules li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding-bottom: 7px; border-bottom: 2px dotted rgba(162,89,255,.4); }
+.rules li.platname { border: 0; padding: 10px 0 0; font-family: var(--arcade); font-size: 10px; color: var(--pink); letter-spacing: .12em; text-shadow: 0 0 8px rgba(255,43,214,.6); }
+.rules .when { color: var(--dim); font-size: 14px; }
+.rules .p { font-family: var(--digits); font-size: 26px; line-height: 1; color: var(--yellow); white-space: nowrap; text-shadow: 0 0 8px rgba(255,233,74,.6); }
+.fine { color: var(--dim); font-size: 14px; margin: 0; }
 
 /* ---------- feed ---------- */
 .feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.feed li { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 20px; background: rgba(2,16,39,.55); }
-.feed .p { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-family: var(--pixel); font-size: 17px; color: var(--ink); background: radial-gradient(circle at 24% 20%, rgba(255,255,255,.95) 0 7%, transparent 8%), var(--kelp); border: 2px solid var(--ink); }
-.feed .p.zero { background: radial-gradient(circle at 24% 20%, rgba(255,255,255,.95) 0 7%, transparent 8%), #6d86a0; }
-.feed .t { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
-.feed .t b { font-family: var(--pixel); font-weight: 400; font-size: 18px; color: var(--sun); letter-spacing: .1em; margin-right: 4px; }
-.feed a { color: var(--aqua); }
+.feed li { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 20px; background: rgba(255,255,255,.04); }
+.feed .p { flex: none; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-family: var(--digits); font-size: 24px; color: var(--green); border: 3px solid var(--green); box-shadow: 0 0 10px rgba(57,255,136,.6); text-shadow: 0 0 8px var(--green); }
+.feed .p.zero { color: var(--dim); border-color: rgba(169,155,201,.5); box-shadow: none; text-shadow: none; }
+.feed .t { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 15px; }
+.feed .t b { font-family: var(--arcade); font-weight: 400; font-size: 12px; color: var(--yellow); letter-spacing: .1em; margin-right: 6px; }
+.feed a { color: var(--cyan); }
 .feed .when { color: var(--dim); }
-.feed .x { flex: none; font-family: var(--pixel); font-size: 13px; color: var(--red); background: none; border: 2px solid var(--red); border-radius: 999px; padding: 4px 10px; cursor: pointer; }
+.feed .x { flex: none; font-family: var(--arcade); font-size: 9px; color: var(--red); background: none; border: 2px solid var(--red); border-radius: 999px; padding: 6px 10px; cursor: pointer; }
 
 /* ---------- game master ---------- */
-.admin { border-style: dashed; }
 .row { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; }
 .row > div { flex: 1 1 180px; min-width: 0; }
-.btn2 { font-family: var(--pop); font-size: 14px; color: var(--foam); background: rgba(2,16,39,.8); border: 3px solid var(--line); border-radius: 999px; padding: 10px 18px; cursor: pointer; }
-.btn2.danger { border-color: rgba(255,92,108,.6); color: var(--red); }
+.btn2 { font-family: var(--body); font-weight: 600; font-size: 15px; color: var(--text); background: none; border: 2px solid rgba(162,89,255,.7); border-radius: 999px; padding: 10px 18px; cursor: pointer; }
+.btn2.danger { border-color: var(--red); color: var(--red); }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
-/* ---------- pop + toast ---------- */
-.pop {
-  position: fixed; left: 50%; top: 38%; z-index: 60; pointer-events: none;
-  width: 170px; height: 170px; margin-left: -85px; border-radius: 50%;
-  display: grid; place-items: center; text-align: center;
-  background: radial-gradient(circle at 30% 26%, rgba(255,255,255,.95) 0 10%, rgba(95,242,255,.35) 11% 60%, rgba(95,242,255,.15) 61%);
-  border: 3px solid rgba(220,252,255,.8);
-  animation: popup 1.25s cubic-bezier(.2,.9,.3,1.2) forwards;
-}
-.pop b { display: block; font-family: var(--bubble); font-weight: 400; font-size: 54px; line-height: 1; color: var(--sun); -webkit-text-stroke: 3px var(--ink); paint-order: stroke fill; text-shadow: 0 4px 0 var(--coral); }
-.pop span { font-family: var(--pop); font-size: 18px; color: var(--foam); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; }
+/* ---------- score pop + toast ---------- */
+.pop { position: fixed; left: 50%; top: 36%; z-index: 60; pointer-events: none; transform: translateX(-50%); text-align: center; animation: popup 1.2s cubic-bezier(.2,.9,.3,1.2) forwards; }
+.pop b { display: block; font-family: var(--bubble); font-weight: 400; font-size: 84px; line-height: 1; color: #fffbd6; text-shadow: 0 0 4px #fff, 0 0 16px var(--yellow), 0 0 40px var(--yellow), 0 0 70px var(--orange); }
+.pop span { display: block; margin-top: 6px; font-family: var(--arcade); font-size: 18px; color: #ffe3fa; text-shadow: 0 0 10px var(--pink), 0 0 24px var(--pink); }
 @keyframes popup {
-  0% { transform: scale(.2) translateY(40px); opacity: 0; }
-  25% { transform: scale(1.08) translateY(0); opacity: 1; }
-  70% { transform: scale(1) translateY(-30px); opacity: 1; }
-  100% { transform: scale(1.6) translateY(-60px); opacity: 0; }
+  0% { transform: translateX(-50%) scale(.3); opacity: 0; }
+  25% { transform: translateX(-50%) scale(1.12); opacity: 1; }
+  70% { transform: translateX(-50%) scale(1) translateY(-24px); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1.3) translateY(-60px); opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .pop { display: none; } }
 .toast {
-  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 70;
-  max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 999px;
-  background: var(--ink); border: 3px solid var(--kelp); color: var(--kelp); font-size: 14px;
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90;
+  max-width: calc(100% - 32px); padding: 10px 18px; border-radius: 999px; background: var(--night);
+  border: 2px solid var(--green); color: var(--green); box-shadow: 0 0 14px rgba(57,255,136,.4); font-size: 15px;
 }
-.toast.bad { border-color: var(--red); color: var(--red); }
+.toast.bad { border-color: var(--red); color: var(--red); box-shadow: none; }
 
-.credit { text-align: center; font-size: 12px; color: var(--dim); }
-.credit a { color: var(--aqua); }
+.credit { text-align: center; font-size: 13px; color: var(--dim); }
+.credit a { color: var(--cyan); }
 </style>
 </head>
 <body>
 
-<div class="rays" aria-hidden="true"></div>
-<div class="bubbles" id="bubbles" aria-hidden="true"></div>
-<div class="seabed" aria-hidden="true">
-  <svg viewBox="0 0 1200 150" preserveAspectRatio="none">
-    <g fill="#0d7a63" opacity=".75">
-      <path class="kelp" d="M80 150 C60 110 110 90 85 55 C65 30 95 10 90 0 C110 20 100 45 115 65 C135 95 100 115 110 150Z"/>
-      <path class="kelp b" d="M210 150 C195 120 240 100 220 70 C205 45 230 30 228 18 C250 40 238 60 250 80 C265 110 232 125 240 150Z"/>
-      <path class="kelp c" d="M1010 150 C990 115 1040 95 1015 60 C995 35 1025 15 1020 4 C1042 26 1030 50 1045 70 C1065 100 1030 120 1040 150Z"/>
-      <path class="kelp" d="M1120 150 C1105 125 1145 105 1128 80 C1115 60 1135 45 1134 35 C1155 55 1142 72 1152 90 C1165 115 1138 128 1146 150Z"/>
-    </g>
-    <path d="M0 130 C200 112 380 140 600 124 C820 108 1000 138 1200 120 L1200 150 L0 150Z" fill="#031631"/>
-    <g fill="#ff6f91" opacity=".8">
-      <circle cx="420" cy="128" r="9"/><circle cx="436" cy="122" r="7"/><circle cx="450" cy="130" r="8"/>
-      <circle cx="780" cy="126" r="8"/><circle cx="794" cy="119" r="6"/>
-    </g>
-  </svg>
-</div>
+<div class="stars" id="stars" aria-hidden="true"></div>
+<div class="floor" aria-hidden="true"></div>
 
 <div class="cabinet">
   <header class="marquee">
-    <svg class="fish" viewBox="0 0 60 34" aria-hidden="true"><path d="M8 17 C18 2 44 2 52 17 C44 32 18 32 8 17Z" fill="#ff9a3c" stroke="#021027" stroke-width="2.5"/><path d="M10 17 L0 5 L0 29Z" fill="#ff6f91" stroke="#021027" stroke-width="2.5" stroke-linejoin="round"/><circle cx="42" cy="14" r="3.2" fill="#021027"/><circle cx="43" cy="13" r="1" fill="#fff"/></svg>
-    <svg class="fish two" viewBox="0 0 60 34" aria-hidden="true"><path d="M8 17 C18 2 44 2 52 17 C44 32 18 32 8 17Z" fill="#a68bff" stroke="#021027" stroke-width="2.5"/><path d="M10 17 L0 5 L0 29Z" fill="#5ff2ff" stroke="#021027" stroke-width="2.5" stroke-linejoin="round"/><circle cx="42" cy="14" r="3.2" fill="#021027"/></svg>
-
     <div class="tagrow">
       <span class="tag" id="companyTag">YOUR COMPANY PRESENTS</span>
-      <span class="tag jp" id="jpTag">バブル・ボード</span>
       <span class="tag mode demo" id="modeTag">DEMO MODE</span>
     </div>
-    <h1 class="bob" id="title" aria-label="Bubble Board"></h1>
+    <h1 class="flicker" id="title" aria-label="Bubble Board"></h1>
     <p class="sub" id="subline">Post, share and cheer for the team. Every play scores points.</p>
-    <div class="prize"><span id="prizeLead">TOP DIVER WINS</span> <b id="prize">$100</b></div>
+    <div class="prize"><span id="prizeLead">TOP PLAYER WINS</span> <b id="prize">$100</b></div>
     <div class="hud">
-      <span>DIVERS<b id="hudPlayers">--</b></span>
-      <span>PLAYS<b id="hudPlays">--</b></span>
-      <span>のこり TIME<b id="hudTime">--</b></span>
+      <span>PLAYERS <b id="hudPlayers">--</b></span>
+      <span>PLAYS <b id="hudPlays">--</b></span>
+      <span>TIME LEFT <b id="hudTime">--</b></span>
     </div>
-    <a class="start" href="#play"><span class="blink">PRESS START</span> <small>スタート</small></a>
+    <a class="start" href="#play"><span class="blink">PRESS START</span></a>
   </header>
 
-  <section class="panel hot" aria-labelledby="hsTitle">
-    <div class="ph"><span class="jp">ハイスコア</span><h2 id="hsTitle">High Scores</h2></div>
+  <section class="panel" aria-labelledby="hsTitle">
+    <div class="ph"><span class="eyebrow">TOP 10</span><h2 id="hsTitle">High Scores</h2></div>
     <table class="scores">
-      <thead><tr><th>RANK</th><th>NAME</th><th class="who">DIVER</th><th class="r">SCORE</th></tr></thead>
+      <thead><tr><th>RANK</th><th>NAME</th><th class="who">PLAYER</th><th class="r">SCORE</th></tr></thead>
       <tbody id="board"></tbody>
     </table>
-    <div class="empty" id="boardEmpty"><b>INSERT COIN · コインを入れてね</b>No scores yet. Log the first play and take the top spot.</div>
+    <div class="empty" id="boardEmpty"><b>INSERT COIN</b>No scores yet. Log the first play and take the top spot.</div>
   </section>
 
   <div class="two">
-    <section class="panel" id="play" aria-labelledby="playTitle">
-      <div class="ph"><span class="jp">プレイ</span><h2 id="playTitle">Log a Play</h2></div>
+    <section class="panel t-pink" id="play" aria-labelledby="playTitle">
+      <div class="ph"><span class="eyebrow">PLAYER 1 READY</span><h2 id="playTitle">Log a Play</h2></div>
       <form id="playForm" novalidate>
         <div>
           <label for="initials">YOUR INITIALS</label>
@@ -363,26 +299,26 @@ input:focus { border-color: var(--aqua); outline: none; box-shadow: 0 0 0 4px rg
         <p class="msg" id="msg" role="status"></p>
         <div class="logged" id="loggedCard" hidden role="status">
           <span class="check"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span>
-          <div><b>PLAY LOGGED · やった!</b><span id="loggedText"></span></div>
+          <div><b>PLAY LOGGED</b><span id="loggedText"></span></div>
         </div>
       </form>
     </section>
 
-    <section class="panel" aria-labelledby="rulesTitle">
-      <div class="ph"><span class="jp">ルール</span><h2 id="rulesTitle">How to Score</h2></div>
+    <section class="panel t-yellow" aria-labelledby="rulesTitle">
+      <div class="ph"><span class="eyebrow">POINT TABLE</span><h2 id="rulesTitle">How to Score</h2></div>
       <ul class="rules" id="rules"></ul>
       <p class="fine" id="fineprint"></p>
     </section>
   </div>
 
-  <section class="panel" aria-labelledby="feedTitle">
-    <div class="ph"><span class="jp">さいしん</span><h2 id="feedTitle">Latest Plays</h2></div>
+  <section class="panel t-green" aria-labelledby="feedTitle">
+    <div class="ph"><span class="eyebrow">LIVE</span><h2 id="feedTitle">Latest Plays</h2></div>
     <ul class="feed" id="feed"></ul>
     <p class="note" id="feedEmpty">Plays show up here the moment someone logs one.</p>
   </section>
 
-  <section class="panel admin" id="adminPanel" hidden aria-labelledby="adminTitle">
-    <div class="ph"><span class="jp">ゲームマスター</span><h2 id="adminTitle">Game Master</h2></div>
+  <section class="panel t-purple" id="adminPanel" hidden aria-labelledby="adminTitle">
+    <div class="ph"><span class="eyebrow">EDITORS ONLY</span><h2 id="adminTitle">Game Master</h2></div>
     <form id="seasonForm" class="row">
       <div><label for="startDate">CONTEST STARTS</label><input type="date" id="startDate"></div>
       <div><label for="endDate">CONTEST ENDS</label><input type="date" id="endDate"></div>
@@ -390,7 +326,7 @@ input:focus { border-color: var(--aqua); outline: none; box-shadow: 0 0 0 4px rg
       <p class="msg" id="seasonMsg" role="status" style="flex-basis:100%"></p>
     </form>
     <div class="btns" id="demoBtns" hidden>
-      <button class="btn2" type="button" id="resetDemo">Reload demo divers</button>
+      <button class="btn2" type="button" id="resetDemo">Reload demo players</button>
       <button class="btn2 danger" type="button" id="clearAll">Clear the board</button>
     </div>
     <p class="fine" id="adminNote">Only editors see this panel. Use the X next to any play to remove it.</p>
@@ -407,9 +343,8 @@ const CONFIG = {
   company: "Your Company",           // shows in the marquee and the rules
   instagram: "@yourcompany",         // your Instagram handle
   titleLines: ["BUBBLE", "BOARD"],   // the big bubble letters (keep each line short)
-  jpTag: "バブル・ボード",             // little Japanese tag in the marquee
   subline: "Post, share and cheer for the team. Every play scores points.",
-  prizeLead: "TOP DIVER WINS",
+  prizeLead: "TOP PLAYER WINS",
   prize: "$100",
   likeCap: 10,                       // likes that count per person per day
   gameMaster: "your Game Master",    // who to ask for access
@@ -429,7 +364,7 @@ const CONFIG = {
     { key: "ig_comment", plat: "ig", name: "Comment",           pts: 2,  hint: "on a {company} or teammate post" },
     { key: "ig_like",    plat: "ig", name: "Like",              pts: 1,  hint: "on a {company} or teammate post", like: true },
   ],
-  cheers: ["すごい!", "ナイス!", "やった!", "かわいい!", "最高!"],
+  cheers: ["NICE!", "COMBO!", "GREAT!", "PERFECT!", "LEVEL UP!"],
 };
 /* ========================================================= */
 
@@ -456,12 +391,11 @@ function buildTitle() {
   h.setAttribute("aria-label", CONFIG.titleLines.join(" "));
   document.title = CONFIG.titleLines.map(w => w[0] + w.slice(1).toLowerCase()).join(" ");
 }
-function buildBubbles() {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const box = $("bubbles");
-  for (let n = 0; n < 22; n++) {
-    const b = document.createElement("i"), size = 6 + Math.random() * 26;
-    b.style.cssText = `left:${Math.random() * 100}%;width:${size}px;height:${size}px;animation-duration:${9 + Math.random() * 12}s;animation-delay:${-Math.random() * 20}s`;
+function buildStars() {
+  const box = $("stars");
+  for (let n = 0; n < 40; n++) {
+    const b = document.createElement("i");
+    b.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 60}%;opacity:${.3 + Math.random() * .6};animation-delay:${-Math.random() * 3}s`;
     box.append(b);
   }
 }
@@ -492,7 +426,6 @@ function postKey(url) {
 function renderStatic() {
   buildTitle();
   $("companyTag").textContent = CONFIG.company.toUpperCase() + " PRESENTS";
-  $("jpTag").textContent = CONFIG.jpTag;
   $("subline").textContent = CONFIG.subline;
   $("prizeLead").textContent = CONFIG.prizeLead;
   $("prize").textContent = CONFIG.prize;
@@ -541,6 +474,7 @@ function ago(ms) {
   if (m < 60) return m + "m ago"; const h = Math.round(m / 60);
   if (h < 48) return h + "h ago"; return Math.round(h / 24) + "d ago";
 }
+function ordinal(n) { return ["1ST", "2ND", "3RD"][n - 1] || n + "TH"; }
 let renderSeq = 0;
 async function render() {
   const seq = ++renderSeq;
@@ -556,7 +490,7 @@ async function render() {
     ];
     cells.forEach(([cls, text], j) => {
       const td = document.createElement("td"); if (cls) td.className = cls;
-      if (j === 0) { const b = document.createElement("span"); b.className = "badge"; b.textContent = (i + 1) + "位"; b.setAttribute("aria-label", "Rank " + (i + 1)); td.append(b); }
+      if (j === 0) { const b = document.createElement("span"); b.className = "badge"; b.textContent = ordinal(i + 1); b.setAttribute("aria-label", "Rank " + (i + 1)); td.append(b); }
       else td.textContent = text;
       tr.append(td);
     });
@@ -711,16 +645,16 @@ function demoState() {
   return {
     season: { startsAt: now - 6 * 24 * H, endsAt: now + 12 * 24 * H },
     players: {
-      "demo-koi": P("KOI", "Koi Captain", [e("post", 70, "Launch day post"), e("post", 30, "Why I love our team"), e("reshare", 50, "Product news, with my take"), e("comment", 6, "Cheered on a teammate"), e("ig_story", 2, "Office tour story")]),
-      "demo-ray": P("RAY", "Manta Ray", [e("post", 40, "Customer win post"), e("repost", 20, "Hiring post"), e("comment", 9, "Congrats comment"), e("like", 3, "Liked the recap"), e("ig_repost", 12, "Event reel")]),
-      "demo-orc": P("ORC", "Orca Queen", [e("reshare", 60, "Award news"), e("comment", 44, "Big thread reply"), e("ig_story", 26, "Behind the scenes"), e("ig_comment", 5, "Reel comment"), e("like", 4, "Liked a teammate post")]),
-      "demo-jel": P("JEL", "Jelly Bean", [e("repost", 15, "Webinar invite"), e("comment", 8, "Teammate post"), e("ig_like", 1, "Liked the reel")]),
-      "demo-tak": P("TAK", "Tako Tim", [e("comment", 22, "Launch thread"), e("like", 7, "Liked the launch")]),
+      "demo-ace": P("ACE", "Neon Nina", [e("post", 70, "Launch day post"), e("post", 30, "Why I love our team"), e("reshare", 50, "Product news, with my take"), e("comment", 6, "Cheered on a teammate"), e("ig_story", 2, "Office tour story")]),
+      "demo-max": P("MAX", "Turbo Max", [e("post", 40, "Customer win post"), e("repost", 20, "Hiring post"), e("comment", 9, "Congrats comment"), e("like", 3, "Liked the recap"), e("ig_repost", 12, "Event reel")]),
+      "demo-zap": P("ZAP", "Zoe Zap", [e("reshare", 60, "Award news"), e("comment", 44, "Big thread reply"), e("ig_story", 26, "Behind the scenes"), e("ig_comment", 5, "Reel comment"), e("like", 4, "Liked a teammate post")]),
+      "demo-jet": P("JET", "Jay Jet", [e("repost", 15, "Webinar invite"), e("comment", 8, "Teammate post"), e("ig_like", 1, "Liked the reel")]),
+      "demo-kat": P("KAT", "Kat Combo", [e("comment", 22, "Launch thread"), e("like", 7, "Liked the launch")]),
     },
   };
 }
 function localStore() {
-  const KEY = "bubble-board-v1";
+  const KEY = "bubble-board-v2";
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch {}
   if (!state || !state.players) state = demoState();
@@ -752,12 +686,12 @@ function start(s) {
   s.onPlayers(list => { players = list; render(); });
   s.onSeason(v => { season = v || {}; setSeasonInputs(); renderClock(); render(); });
 }
-$("resetDemo").onclick = () => { store?.reset?.(); toast("Demo divers are back.", true); };
+$("resetDemo").onclick = () => { store?.reset?.(); toast("Demo players are back.", true); };
 $("clearAll").onclick = () => { if (confirm("Clear every score on this board?")) { store?.clear?.(); toast("Board cleared.", true); } };
 
 // ---------- boot ----------
 renderStatic();
-buildBubbles();
+buildStars();
 render();
 setInterval(renderClock, 30000);
 setInterval(() => { if (players.length) render(); }, 60000);
