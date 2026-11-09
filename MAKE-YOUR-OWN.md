@@ -1,9 +1,9 @@
-# Make your own Bubble Board with Claude
+# Make your own Hype Arcade with Claude
 
 Attach `index.html` to a new chat at [claude.ai](https://claude.ai), then copy and paste everything in the box below.
 
 ```
-I'm attaching index.html. It's "Bubble Board," a neon arcade-style
+I'm attaching index.html. It's "Hype Arcade," a neon arcade-style
 employee advocacy leaderboard. My team logs LinkedIn and Instagram plays
 and competes for a prize.
 
@@ -11,7 +11,7 @@ Please make it mine:
 
 1. Ask me these questions first, all at once:
    - Company name and Instagram handle
-   - The two short words for the big bubble-letter title (or keep BUBBLE BOARD)
+   - The two short words for the big bubble-letter title (or keep HYPE ARCADE)
    - The prize
    - Contest start and end dates
    - Who runs the contest (the name teammates should ask for access)

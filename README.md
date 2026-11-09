@@ -1,12 +1,12 @@
-# Bubble Board 🕹️
+# Hype Arcade 🕹️
 
 A neon arcade high score board for employee advocacy.
 
 Your team logs every LinkedIn and Instagram play (posts, reshares, comments, likes, stories). Each play scores points, the board ranks everyone, and the top player wins the prize.
 
-![Bubble Board preview](preview.jpg)
+![Hype Arcade preview](preview.jpg)
 
-**Try the demo:** https://alyssanewman.github.io/bubble-board/
+**Try the demo:** https://alyssanewman.github.io/hype-arcade/
 
 Built with Claude by Alyssa Newman, [PVLP Social](https://pvlpsocial.com).
 
@@ -51,7 +51,7 @@ Everything lives in the `CONFIG` block at the top of the script in `index.html`:
 const CONFIG = {
   company: "Your Company",
   instagram: "@yourcompany",
-  titleLines: ["BUBBLE", "BOARD"],
+  titleLines: ["HYPE", "ARCADE"],
   prize: "$100",
   likeCap: 10,
   moves: [ /* point values for every play */ ],

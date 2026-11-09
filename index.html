@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Bubble Board</title>
+<title>Hype Arcade</title>
 <meta name="description" content="A neon arcade high score board for employee advocacy. Teammates log their LinkedIn and Instagram plays and race for the top spot.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Press+Start+2P&family=Rubik+Bubbles&family=VT323&display=swap">
 <style>
 /* =========================================================
-   BUBBLE BOARD
+   HYPE ARCADE
    One neon arcade cabinet: marquee, high scores, log a play,
    how to score, latest plays, game master. Single dark neon look by design.
    ========================================================= */
@@ -255,8 +255,8 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
       <span class="tag" id="companyTag">YOUR COMPANY PRESENTS</span>
       <span class="tag mode demo" id="modeTag">DEMO MODE</span>
     </div>
-    <h1 class="flicker" id="title" aria-label="Bubble Board"></h1>
-    <p class="sub" id="subline">Post, share and cheer for the team. Every play scores points.</p>
+    <h1 class="flicker" id="title" aria-label="Hype Arcade"></h1>
+    <p class="sub" id="subline">The team member creating the most hype on socials wins.</p>
     <div class="prize"><span id="prizeLead">TOP PLAYER WINS</span> <b id="prize">$100</b></div>
     <div class="hud">
       <span>PLAYERS <b id="hudPlayers">--</b></span>
@@ -332,7 +332,7 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
     <p class="fine" id="adminNote">Only editors see this panel. Use the X next to any play to remove it.</p>
   </section>
 
-  <p class="credit">Made with Claude. Want your own? <a id="repoLink" href="https://github.com/alyssanewman/bubble-board">Grab the template</a>.</p>
+  <p class="credit">Made with Claude. Want your own? <a id="repoLink" href="https://github.com/alyssanewman/hype-arcade">Grab the template</a>.</p>
 </div>
 
 <script>
@@ -342,13 +342,13 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
 const CONFIG = {
   company: "Your Company",           // shows in the marquee and the rules
   instagram: "@yourcompany",         // your Instagram handle
-  titleLines: ["BUBBLE", "BOARD"],   // the big bubble letters (keep each line short)
-  subline: "Post, share and cheer for the team. Every play scores points.",
+  titleLines: ["HYPE", "ARCADE"],   // the big bubble letters (keep each line short)
+  subline: "The team member creating the most hype on socials wins.",
   prizeLead: "TOP PLAYER WINS",
   prize: "$100",
   likeCap: 10,                       // likes that count per person per day
   gameMaster: "your Game Master",    // who to ask for access
-  repoUrl: "https://github.com/alyssanewman/bubble-board", // link in the footer
+  repoUrl: "https://github.com/alyssanewman/hype-arcade", // link in the footer
   platforms: [
     { key: "li", name: "LinkedIn", host: /^https:\/\/(([a-z0-9-]+\.)*linkedin\.com|lnkd\.in)\//i, placeholder: "https://www.linkedin.com/posts/..." },
     { key: "ig", name: "Instagram", host: /^https:\/\/([a-z0-9-]+\.)*instagram\.com\//i, placeholder: "Paste the link, or describe it: launch reel, Nov 3", label: "LINK OR DESCRIPTION", describe: true },
@@ -654,7 +654,7 @@ function demoState() {
   };
 }
 function localStore() {
-  const KEY = "bubble-board-v2";
+  const KEY = "hype-arcade-v2";
   let state = null;
   try { state = JSON.parse(localStorage.getItem(KEY)); } catch {}
   if (!state || !state.players) state = demoState();
