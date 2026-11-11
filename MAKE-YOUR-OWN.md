@@ -1,9 +1,11 @@
 # Make your own Hype Arcade with Claude
 
-Attach `index.html` to a new chat at [claude.ai](https://claude.ai), then copy and paste everything in the box below.
+Easiest way: open the [live demo](https://alyssanewman.github.io/hype-arcade/#makeOwn) and use the **Make Your Own** buttons to download the board and copy this prompt.
+
+Or do it by hand: attach `index.html` to a new chat at [claude.ai](https://claude.ai), then copy and paste everything in the box below.
 
 ```
-I'm attaching index.html. It's "Hype Arcade," a neon arcade-style
+I'm attaching the Hype Arcade HTML file. It's "Hype Arcade," a neon arcade-style
 employee advocacy leaderboard. My team logs LinkedIn and Instagram plays
 and competes for a prize.
 

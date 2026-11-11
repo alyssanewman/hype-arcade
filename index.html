@@ -240,6 +240,19 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
 }
 .toast.bad { border-color: var(--red); color: var(--red); box-shadow: none; }
 
+.panel.t-orange { --tube: var(--orange); }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: step; }
+.steps li { counter-increment: step; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 12px 14px; border-radius: 20px; background: rgba(255,255,255,.04); }
+.steps li::before { content: counter(step); flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-family: var(--arcade); font-size: 13px; color: var(--orange); border: 3px solid var(--orange); box-shadow: 0 0 10px rgba(255,138,31,.6); text-shadow: 0 0 8px var(--orange); }
+.steps .txt { flex: 1 1 200px; min-width: 0; }
+.steps .txt b { display: block; font-weight: 600; }
+.steps .txt span { color: var(--dim); font-size: 14px; }
+.go { font-family: var(--arcade); font-size: 10px; letter-spacing: .06em; line-height: 1.4; color: var(--orange); background: none; text-decoration: none; cursor: pointer; border: 2px solid var(--orange); border-radius: 999px; padding: 10px 16px; box-shadow: 0 0 10px rgba(255,138,31,.45); white-space: nowrap; }
+.go:hover { background: rgba(255,138,31,.12); }
+.go.done { color: var(--green); border-color: var(--green); box-shadow: 0 0 10px rgba(57,255,136,.45); }
+details.prompt summary { cursor: pointer; color: var(--cyan); font-size: 14px; }
+details.prompt pre { white-space: pre-wrap; overflow-wrap: anywhere; font-family: ui-monospace, Menlo, monospace; font-size: 12px; line-height: 1.5; color: var(--text); background: rgba(7,2,15,.85); border: 2px solid rgba(162,89,255,.4); border-radius: 16px; padding: 14px; margin: 10px 0 0; max-height: 320px; overflow-y: auto; }
+.mine { color: var(--orange); font-size: 15px; text-decoration: underline; text-underline-offset: 4px; text-shadow: 0 0 10px rgba(255,138,31,.5); }
 .credit { text-align: center; font-size: 13px; color: var(--dim); }
 .credit a { color: var(--cyan); }
 </style>
@@ -264,6 +277,7 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
       <span>TIME LEFT <b id="hudTime">--</b></span>
     </div>
     <a class="start" href="#play"><span class="blink">PRESS START</span></a>
+    <a class="mine" id="makeLink" href="#makeOwn">Want this for your team? Make your own ↓</a>
   </header>
 
   <section class="panel" aria-labelledby="hsTitle">
@@ -317,6 +331,18 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
     <p class="note" id="feedEmpty">Plays show up here the moment someone logs one.</p>
   </section>
 
+  <section class="panel t-orange" id="makeOwn" aria-labelledby="makeTitle">
+    <div class="ph"><span class="eyebrow">CONTINUE?</span><h2 id="makeTitle">Make Your Own</h2></div>
+    <p class="note">Run Hype Arcade for your own team. Claude sets it up with your company name, prize and dates in about five minutes.</p>
+    <ol class="steps">
+      <li><span class="txt"><b>Download the board</b><span>Saves hype-arcade.html to your computer.</span></span><button class="go" type="button" id="dlBoard">DOWNLOAD</button></li>
+      <li><span class="txt"><b>Copy the Claude prompt</b><span>The instructions Claude needs to make it yours.</span></span><button class="go" type="button" id="copyPrompt">COPY PROMPT</button></li>
+      <li><span class="txt"><b>Open Claude</b><span>Start a new chat, attach the file and paste the prompt.</span></span><a class="go" href="https://claude.ai/new" target="_blank" rel="noopener">OPEN CLAUDE</a></li>
+      <li><span class="txt"><b>Answer a few questions</b><span>Claude builds your board and gives you a link to share with your team. Teammates sign in to Claude to play.</span></span></li>
+    </ol>
+    <details class="prompt"><summary>See the prompt</summary><pre id="promptView"></pre></details>
+  </section>
+
   <section class="panel t-purple" id="adminPanel" hidden aria-labelledby="adminTitle">
     <div class="ph"><span class="eyebrow">EDITORS ONLY</span><h2 id="adminTitle">Game Master</h2></div>
     <form id="seasonForm" class="row">
@@ -335,6 +361,43 @@ input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 0 3px rg
   <p class="credit">Made with Claude. Want your own? <a id="repoLink" href="https://github.com/alyssanewman/hype-arcade">Grab the template</a>.</p>
 </div>
 
+<script type="text/plain" id="promptText">I'm attaching the Hype Arcade HTML file. It's "Hype Arcade," a neon arcade-style
+employee advocacy leaderboard. My team logs LinkedIn and Instagram plays
+and competes for a prize.
+
+Please make it mine:
+
+1. Ask me these questions first, all at once:
+   - Company name and Instagram handle
+   - The two short words for the big bubble-letter title (or keep HYPE ARCADE)
+   - The prize
+   - Contest start and end dates
+   - Who runs the contest (the name teammates should ask for access)
+   - Any point values or plays I want to change
+
+2. Edit only the CONFIG block at the top of the script. Keep the design,
+   the scoring logic and the storage code as they are.
+
+3. Publish it as an artifact with these capabilities, so my whole team shares
+   one live leaderboard:
+
+   {
+     "db": {
+       "rules": [
+         { "path": "players", "read": "view", "write": "admin" },
+         { "path": "players/{self}", "read": "view", "write": "interact" },
+         { "path": "config", "read": "view", "write": "admin" }
+       ]
+     },
+     "user": { "scopes": ["profile"] }
+   }
+
+4. Write my contest dates to the config/season document as
+   { startsAt, endsAt } in milliseconds (start at 12:00 AM, end at 11:59 PM
+   my local time).
+
+5. Tell me how to share it so teammates can log plays.
+</script>
 <script>
 /* =========================================================
    EDIT ME: everything that makes this board yours lives here.
@@ -682,10 +745,34 @@ function start(s) {
   $("modeTag").classList.toggle("demo", demo);
   $("adminPanel").hidden = !s.isAdmin;
   $("demoBtns").hidden = !demo;
+  $("makeOwn").hidden = !demo;
+  $("makeLink").hidden = !demo;
   if (demo) $("adminNote").textContent = "Demo mode saves to this browser only. Open this board inside Claude to give your team one shared leaderboard.";
   s.onPlayers(list => { players = list; render(); });
   s.onSeason(v => { season = v || {}; setSeasonInputs(); renderClock(); render(); });
 }
+// ---------- make your own ----------
+const PROMPT = $("promptText").textContent.replace(/<\\\//g, "</").trim();
+$("promptView").textContent = PROMPT;
+$("copyPrompt").onclick = async () => {
+  let ok = false;
+  try { await navigator.clipboard.writeText(PROMPT); ok = true; } catch {
+    const t = document.createElement("textarea"); t.value = PROMPT; t.style.position = "fixed"; t.style.opacity = "0";
+    document.body.append(t); t.select(); try { ok = document.execCommand("copy"); } catch {} t.remove();
+  }
+  if (ok) { $("copyPrompt").textContent = "COPIED!"; $("copyPrompt").classList.add("done"); toast("Prompt copied. Paste it into Claude.", true); }
+  else { $("promptView").closest("details").open = true; toast("Couldn't copy. Select the prompt below and copy it.", false); }
+};
+$("dlBoard").onclick = async () => {
+  try {
+    const res = await fetch(location.href.split("#")[0], { cache: "no-store" });
+    if (!res.ok) throw 0;
+    const url = URL.createObjectURL(new Blob([await res.text()], { type: "text/html" }));
+    const a = document.createElement("a"); a.href = url; a.download = "hype-arcade.html";
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+    $("dlBoard").textContent = "DOWNLOADED!"; $("dlBoard").classList.add("done");
+  } catch { window.open(CONFIG.repoUrl, "_blank", "noopener"); }
+};
 $("resetDemo").onclick = () => { store?.reset?.(); toast("Demo players are back.", true); };
 $("clearAll").onclick = () => { if (confirm("Clear every score on this board?")) { store?.clear?.(); toast("Board cleared.", true); } };
 

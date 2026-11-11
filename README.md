@@ -35,11 +35,13 @@ The page detects where it's running. On GitHub it opens in demo mode with five s
 
 ## Make your own with Claude (about 5 minutes)
 
-1. Download `index.html` from this repo (click the file, then the download button).
-2. Open [claude.ai](https://claude.ai) and start a new chat.
-3. Attach `index.html` and paste the prompt from [MAKE-YOUR-OWN.md](MAKE-YOUR-OWN.md).
+1. Open the [live demo](https://alyssanewman.github.io/hype-arcade/#makeOwn) and scroll to **Make Your Own**.
+2. Click **Download** to save the board, then **Copy Prompt**.
+3. Click **Open Claude**, attach the file and paste the prompt.
 4. Answer Claude's questions (company name, prize, dates).
 5. Claude publishes your board. Share the link with your team.
+
+Prefer to do it by hand? Download `index.html` from this repo and use the prompt in [MAKE-YOUR-OWN.md](MAKE-YOUR-OWN.md).
 
 Teammates need a claude.ai account to play on the shared board.
 
